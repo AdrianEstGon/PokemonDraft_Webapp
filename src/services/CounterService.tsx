@@ -1,6 +1,8 @@
 import axios from "axios";
 
-const API_URL = "https://localhost:7219/api/counters"; // 👈 ajusta si es otro endpoint
+import { API_BASE_URL } from "../utils/config";
+
+const API_URL = `${API_BASE_URL}/counters`;
 
 export const getCounters = async () => {
   const response = await axios.get(API_URL);
