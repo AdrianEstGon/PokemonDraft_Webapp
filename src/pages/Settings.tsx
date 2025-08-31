@@ -122,9 +122,10 @@ const handleSave = async () => {
   const updates = counters[selectedPokemon.name];
   if (!updates) return;
 
-  setSaving(true); // 👈 empieza loading
+  setSaving(true);
   try {
     const newCounters = { ...counters };
+    const tasks: Promise<any>[] = [];
 
     for (const [otherName, data] of Object.entries(updates)) {
       const counterPokemon = allPokemons.find((p) => p.name === otherName);
@@ -137,10 +138,17 @@ const handleSave = async () => {
       };
 
       if (data.id) {
-        await updateCounter(data.id, counterPayload);
+        tasks.push(
+          updateCounter(data.id, counterPayload).then(() => {
+            // nada más, ya está actualizado
+          })
+        );
       } else {
-        const created = await createCounter(counterPayload);
-        newCounters[selectedPokemon.name][otherName] = { ...data, id: created.id };
+        tasks.push(
+          createCounter(counterPayload).then((created) => {
+            newCounters[selectedPokemon.name][otherName] = { ...data, id: created.id };
+          })
+        );
       }
 
       // inverso
@@ -152,13 +160,19 @@ const handleSave = async () => {
       };
 
       if (existingInverse?.id) {
-        await updateCounter(existingInverse.id, inversePayload);
+        tasks.push(updateCounter(existingInverse.id, inversePayload));
       } else {
-        const createdInverse = await createCounter(inversePayload);
-        if (!newCounters[otherName]) newCounters[otherName] = {};
-        newCounters[otherName][selectedPokemon.name] = { value: 100 - data.value, id: createdInverse.id };
+        tasks.push(
+          createCounter(inversePayload).then((createdInverse) => {
+            if (!newCounters[otherName]) newCounters[otherName] = {};
+            newCounters[otherName][selectedPokemon.name] = { value: 100 - data.value, id: createdInverse.id };
+          })
+        );
       }
     }
+
+    // 👈 correr todas las requests en paralelo
+    await Promise.all(tasks);
 
     setCounters(newCounters);
     toast.success("Counters saved successfully!");
@@ -166,9 +180,10 @@ const handleSave = async () => {
     console.error("Error saving counters", err);
     toast.error("Error saving counters");
   } finally {
-    setSaving(false); // 👈 termina loading
+    setSaving(false);
   }
 };
+
 
 
 
