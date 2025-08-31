@@ -20,6 +20,7 @@ import {
   Tooltip,
   Autocomplete,
   TextField,
+  CircularProgress, 
 } from "@mui/material";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import { DraftAdvisor, type Counter } from "./DraftAdvisor";
@@ -51,12 +52,17 @@ export default function App() {
   const [searchText, setSearchText] = useState("");
   const [allPokemons, setAllPokemons] = useState<any[]>([]);
   const [counters, setCounters] = useState<Counter[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
 
-  // 1. Cargar pokemons
+   // 1. Cargar pokemons
   useEffect(() => {
-    getPokemons().then(setAllPokemons).catch(console.error);
+    setLoading(true);
+    getPokemons()
+      .then(setAllPokemons)
+      .catch(console.error)
+      .finally(() => setLoading(false)); // 👈 cuando termina se apaga el loader
   }, []);
 
   useEffect(() => {
@@ -202,6 +208,28 @@ export default function App() {
       )}
     </TableCell>
   );
+
+  if (loading) {
+    return (
+      <Box
+        sx={{
+          height: "100vh",
+          width: "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexDirection: "column",
+          gap: 2,
+          bgcolor: "rgba(0,0,0,0.6)",
+        }}
+      >
+        <CircularProgress size={80} thickness={4} />
+        <Typography variant="h6" color="white">
+          Loading Pokémon...
+        </Typography>
+      </Box>
+    );
+  }
 
   if (!whoStarts) {
   return (
