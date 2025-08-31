@@ -20,7 +20,7 @@ import {
   Tooltip,
   Autocomplete,
   TextField,
-  CircularProgress, 
+  CircularProgress,
 } from "@mui/material";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import { DraftAdvisor, type Counter } from "./DraftAdvisor";
@@ -56,13 +56,13 @@ export default function App() {
 
   const navigate = useNavigate();
 
-   // 1. Cargar pokemons
+  // 1. Cargar pokemons
   useEffect(() => {
     setLoading(true);
     getPokemons()
       .then(setAllPokemons)
       .catch(console.error)
-      .finally(() => setLoading(false)); // 👈 cuando termina se apaga el loader
+      .finally(() => setLoading(false));
   }, []);
 
   useEffect(() => {
@@ -105,8 +105,9 @@ export default function App() {
   // 4. Filtrar pokemons disponibles
   const available = allPokemons.filter(
     (p) =>
-      ![...allyBans, ...enemyBans, ...allyPicks, ...enemyPicks].includes(p.name) &&
-      (classFilter === "ALL" || p.role === classFilter)
+      ![...allyBans, ...enemyBans, ...allyPicks, ...enemyPicks].includes(
+        p.name
+      ) && (classFilter === "ALL" || p.role === classFilter)
   );
 
   const filteredAvailable = available.filter((p) =>
@@ -116,7 +117,10 @@ export default function App() {
   // 5. Calcular recomendaciones
   const recommendations = useMemo(() => {
     if (phase === "PICK" && currentTeam === "ALLY") {
-      return advisor.recommend(enemyPicks, filteredAvailable.map((p) => p.name));
+      return advisor.recommend(
+        enemyPicks,
+        filteredAvailable.map((p) => p.name)
+      );
     }
     return filteredAvailable.map((p) => ({ pokemon: p.name, score: 0 }));
   }, [phase, step, enemyPicks, filteredAvailable, advisor, currentTeam]);
@@ -182,10 +186,10 @@ export default function App() {
       sx={{
         bgcolor: pokemonName ? getClassColor(pokemonName) : "transparent",
         textAlign: "center",
-        height: 90,
-        width: 90,
-        p: 1,
-        borderRadius: 3,
+        height: 80,
+        width: 80,
+        p: 0.5,
+        borderRadius: 2,
         borderRight: isAlly ? "3px solid rgba(0,0,0,0.3)" : "none",
       }}
     >
@@ -202,7 +206,7 @@ export default function App() {
           <img
             src={allPokemons.find((p) => p.name === pokemonName)?.imageUrl}
             alt={pokemonName}
-            style={{ width: 75, height: 75, objectFit: "contain" }}
+            style={{ width: "70%", height: "70%", objectFit: "contain" }}
           />
         </Box>
       )}
@@ -220,112 +224,134 @@ export default function App() {
           justifyContent: "center",
           flexDirection: "column",
           gap: 2,
-          bgcolor: "rgba(0,0,0,0.6)",
+          backgroundColor: "#66b6f8",  
         }}
       >
         <CircularProgress size={80} thickness={4} />
-        <Typography variant="h6" color="white">
-          Loading Pokémon...
+        <Typography variant="h6" color="black">
+          Loading Pokemons...
         </Typography>
       </Box>
     );
   }
 
   if (!whoStarts) {
-  return (
-    <Box
-      sx={{
-        height: "100vh",
-        width: "100%",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        flexDirection: "column",
-        gap: 3,
-        backgroundColor: "rgba(0, 0, 0, 0.6)", // semitransparente sobre el fondo
-        padding: 3,
-        boxSizing: "border-box",
-      }}
-    >
-      <Container
+    return (
+      <Box
         sx={{
-          backgroundColor: "rgba(249, 248, 248, 0.6)", // fondo del contenido
-          borderRadius: "50%",                        // hace el contenedor circular
-          width: 500,                                  // ancho fijo
-          height: 500,                                 // altura igual al ancho
-          padding: 4,
-          textAlign: "center",
-          boxShadow: 3,
+          height: "100vh",
+          width: "100%",
           display: "flex",
-          flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
+          flexDirection: "column",
+          gap: 3,
+           backgroundColor: "#66b6f8",  
         }}
       >
-        <Typography variant="h3" gutterBottom fontWeight="bold">
-          Pokemon Unite Draft
-        </Typography>
-        <Typography variant="h5" gutterBottom>
-          Who bans first?
-        </Typography>
-        <Stack direction="row" spacing={3} justifyContent="center" sx={{ mt: 2 }}>
-          <Button
-            variant="contained"
-            color="primary"
-            size="large"
-            onClick={() => setWhoStarts("ALLY")}
-          >
-            Allies
-          </Button>
-          <Button
-            variant="contained"
-            color="error"
-            size="large"
-            onClick={() => setWhoStarts("ENEMY")}
-          >
-            Enemies
-          </Button>
-        </Stack>
-      </Container>
+        <Container
+  sx={{
+    backgroundColor: "#fbfbfb", // fondo claro
+    borderRadius: "50%",
+    width: { xs: 280, sm: 400, md: 500 },
+    height: { xs: 280, sm: 400, md: 500 },
+    p: { xs: 2, sm: 4 },
+    textAlign: "center",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
 
-      <Tooltip title="Settings" placement="left">
-        <Fab
-          color="primary"
-          onClick={() => navigate("/settings")}
-          sx={{ position: "fixed", bottom: 24, right: 24, zIndex: 10 }}
-        >
-          <SettingsIcon />
-        </Fab>
-      </Tooltip>
-    </Box>
-  );
-}
+    // sombra y efecto de relieve
+    boxShadow: "0 10px 25px rgba(0,0,0,0.25), 0 6px 6px rgba(0,0,0,0.22)",
+    transition: "transform 0.3s, box-shadow 0.3s",
 
+    "&:hover": {
+      transform: "translateY(-5px)", // levanta ligeramente
+      boxShadow: "0 15px 35px rgba(0,0,0,0.3), 0 10px 10px rgba(0,0,0,0.25)",
+    },
+  }}
+>
+  <Typography variant="h4" gutterBottom fontWeight="bold">
+    Pokemon Unite Draft
+  </Typography>
+  <Typography variant="h6" gutterBottom>
+    Who bans first?
+  </Typography>
+  <Stack
+    direction={{ xs: "column", sm: "row" }}
+    spacing={2}
+    justifyContent="center"
+    sx={{ mt: 2 }}
+  >
+    <Button
+      variant="contained"
+      color="primary"
+      size="large"
+      onClick={() => setWhoStarts("ALLY")}
+    >
+      Allies
+    </Button>
+    <Button
+      variant="contained"
+      color="error"
+      size="large"
+      onClick={() => setWhoStarts("ENEMY")}
+    >
+      Enemies
+    </Button>
+  </Stack>
+</Container>
+
+
+        <Tooltip title="Settings" placement="left">
+  <Fab
+    onClick={() => navigate("/settings")}
+    sx={{
+      position: "fixed",
+      bottom: 24,
+      right: 24,
+      zIndex: 10,
+      bgcolor: "black",
+      color: "white",
+      "&:hover": {
+        bgcolor: "#333", // un gris más claro al pasar el mouse
+      },
+    }}
+  >
+    <SettingsIcon />
+  </Fab>
+</Tooltip>
+
+      </Box>
+    );
+  }
 
   // UI del draft principal
   return (
     <Container
       sx={{
-        py: 2,
+        py: { xs: 1, sm: 2 },
         height: "100vh",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
         width: "100%",
+        px: { xs: 1, sm: 2 },
       }}
     >
       <Paper
         sx={{
           width: "100%",
           maxWidth: 1200,
-          height: "95%",
-          p: 3,
-          borderRadius: 3,
+          height: { xs: "100%", md: "95%" },
+          p: { xs: 2, sm: 3 },
+          borderRadius: { xs: 2, sm: 3 },
           boxShadow: 6,
           bgcolor: "rgba(255,255,255,0.85)",
           display: "flex",
           flexDirection: "column",
-          gap: 2,
+          gap: { xs: 1, sm: 2 },
           position: "relative",
         }}
       >
@@ -339,7 +365,7 @@ export default function App() {
             color: "white",
           }}
         >
-          <Typography variant="h5" fontWeight="bold">
+          <Typography variant="h6" fontWeight="bold">
             {currentTeam === "ALLY" ? "Allies" : "Enemies"}{" "}
             {phase === "BAN" ? "Ban" : "Pick"}
           </Typography>
@@ -348,16 +374,34 @@ export default function App() {
         {/* Layout: Bans, Picks y Disponibles */}
         <Grid container spacing={2} sx={{ flex: 1 }}>
           {/* Bans */}
-          <Grid item xs={3}>
-            <Paper sx={{ p: 2, borderRadius: 3, boxShadow: 4, display: "inline-block" }}>
+          <Grid item xs={12} sm={6} md={3}>
+            <Paper sx={{ p: 2, borderRadius: 3, boxShadow: 4 }}>
               <Typography variant="h6" gutterBottom fontWeight="bold">
                 Bans
               </Typography>
               <Table size="small">
                 <TableHead>
                   <TableRow>
-                    <TableCell sx={{ bgcolor: "primary.main", color: "white", textAlign: "center", fontWeight: "bold" }}>Allies</TableCell>
-                    <TableCell sx={{ bgcolor: "error.main", color: "white", textAlign: "center", fontWeight: "bold" }}>Enemies</TableCell>
+                    <TableCell
+                      sx={{
+                        bgcolor: "primary.main",
+                        color: "white",
+                        textAlign: "center",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      Allies
+                    </TableCell>
+                    <TableCell
+                      sx={{
+                        bgcolor: "error.main",
+                        color: "white",
+                        textAlign: "center",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      Enemies
+                    </TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -373,16 +417,34 @@ export default function App() {
           </Grid>
 
           {/* Draft Picks */}
-          <Grid item xs={3}>
-            <Paper sx={{ p: 2, borderRadius: 3, boxShadow: 4, display: "inline-block" }}>
+          <Grid item xs={12} sm={6} md={3}>
+            <Paper sx={{ p: 2, borderRadius: 3, boxShadow: 4 }}>
               <Typography variant="h6" gutterBottom fontWeight="bold">
                 Draft Picks
               </Typography>
               <Table size="small">
                 <TableHead>
                   <TableRow>
-                    <TableCell sx={{ bgcolor: "primary.main", color: "white", textAlign: "center", fontWeight: "bold" }}>Allies</TableCell>
-                    <TableCell sx={{ bgcolor: "error.main", color: "white", textAlign: "center", fontWeight: "bold" }}>Enemies</TableCell>
+                    <TableCell
+                      sx={{
+                        bgcolor: "primary.main",
+                        color: "white",
+                        textAlign: "center",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      Allies
+                    </TableCell>
+                    <TableCell
+                      sx={{
+                        bgcolor: "error.main",
+                        color: "white",
+                        textAlign: "center",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      Enemies
+                    </TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -398,13 +460,23 @@ export default function App() {
           </Grid>
 
           {/* Disponibles */}
-          <Grid item xs={6} sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 1, height: "100%" }}>
-            <Box sx={{ mb: 1, width: "100%", display: "flex", gap: 1 }}>
+          <Grid item xs={12} md={6}>
+            <Box
+              sx={{
+                mb: 1,
+                width: "100%",
+                display: "flex",
+                flexDirection: { xs: "column", sm: "row" },
+                gap: 1,
+              }}
+            >
               <FormControl sx={{ flex: 1 }}>
                 <InputLabel>Filter by class</InputLabel>
                 <Select
                   value={classFilter}
-                  onChange={(e) => setClassFilter(e.target.value as ClassFilter)}
+                  onChange={(e) =>
+                    setClassFilter(e.target.value as ClassFilter)
+                  }
                   label="Filter by class"
                 >
                   <MenuItem value="ALL">All</MenuItem>
@@ -421,7 +493,9 @@ export default function App() {
                 options={allPokemons.map((p) => p.name)}
                 inputValue={searchText}
                 onInputChange={(_, value) => setSearchText(value)}
-                renderInput={(params) => <TextField {...params} label="Search Pokémon" />}
+                renderInput={(params) => (
+                  <TextField {...params} label="Search Pokémon" />
+                )}
                 freeSolo
                 clearOnEscape
               />
@@ -434,13 +508,15 @@ export default function App() {
             <Box
               sx={{
                 flex: 1,
-                display: "flex",
-                flexWrap: "wrap",
-                justifyContent: "center",
+                display: "grid",
+                gridTemplateColumns: {
+                  xs: "repeat(auto-fill, minmax(80px, 1fr))",
+                  sm: "repeat(auto-fill, minmax(100px, 1fr))",
+                },
                 gap: 1.5,
                 p: 1,
                 overflowY: "auto",
-                maxHeight: 5 * 90 + 1.5 * 4,
+                maxHeight: { xs: "50vh", md: 5 * 90 + 1.5 * 4 },
               }}
             >
               {sortedAvailable.map((p) => (
@@ -448,20 +524,28 @@ export default function App() {
                   key={p.name}
                   variant="outlined"
                   sx={{
-                    minWidth: 90,
-                    minHeight: 90,
+                    aspectRatio: "1 / 1",
+                    width: "100%",
                     p: 1,
-                    borderRadius: 4,
+                    borderRadius: 3,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                     position: "relative",
                     transition: "transform 0.2s, box-shadow 0.2s",
-                    "&:hover": { transform: "scale(1.08)", boxShadow: 4 },
+                    "&:hover": { transform: "scale(1.05)", boxShadow: 3 },
                   }}
                   onClick={() => handleSelect(p.name)}
                 >
-                  <img src={p.imageUrl} alt={p.name} style={{ width: 75, height: 75, objectFit: "contain" }} />
+                  <img
+                    src={p.imageUrl}
+                    alt={p.name}
+                    style={{
+                      width: "70%",
+                      height: "70%",
+                      objectFit: "contain",
+                    }}
+                  />
 
                   {phase === "PICK" && currentTeam === "ALLY" && (
                     <Box
@@ -470,7 +554,9 @@ export default function App() {
                         top: 4,
                         right: 4,
                         bgcolor: () => {
-                          const score = recommendations.find((r) => r.pokemon === p.name)?.score ?? 0;
+                          const score =
+                            recommendations.find((r) => r.pokemon === p.name)
+                              ?.score ?? 0;
                           const green = Math.round((score / 100) * 255);
                           const red = 255 - green;
                           return `rgba(${red}, ${green}, 0, 0.8)`;
@@ -483,7 +569,9 @@ export default function App() {
                         fontWeight: "bold",
                       }}
                     >
-                      {recommendations.find((r) => r.pokemon === p.name)?.score.toFixed(0) ?? 0}
+                      {recommendations
+                        .find((r) => r.pokemon === p.name)
+                        ?.score.toFixed(0) ?? 0}
                     </Box>
                   )}
                 </Button>
@@ -494,7 +582,11 @@ export default function App() {
 
         {/* Botón Restart */}
         <Tooltip title="Restart draft" placement="left">
-          <Fab color="secondary" onClick={reset} sx={{ position: "absolute", bottom: 24, right: 24, zIndex: 10 }}>
+          <Fab
+            color="secondary"
+            onClick={reset}
+            sx={{ position: "absolute", bottom: 24, right: 24, zIndex: 10 }}
+          >
             <RestartAltIcon />
           </Fab>
         </Tooltip>

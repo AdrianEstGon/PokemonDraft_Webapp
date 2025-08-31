@@ -32,20 +32,23 @@ export default function Settings() {
   const [allPokemons, setAllPokemons] = useState<any[]>([]);
   const [saving, setSaving] = useState(false);
 
+// Cargar pokemons
+useEffect(() => {
+  const fetchPokemons = async () => {
+    try {
+      const data = await getPokemons();
+      setAllPokemons(data);
 
-  // Cargar todos los Pokémon
-  useEffect(() => {
-    const fetchPokemons = async () => {
-      try {
-        const data = await getPokemons();
-        setAllPokemons(data);
-      } catch (error) {
-        console.error("Error loading pokemons:", error);
-        toast.error("Error loading Pokémons");
-      }
-    };
-    fetchPokemons();
-  }, []);
+      // Seleccionar Pikachu automáticamente
+      const defaultPokemon = data.find((p: any) => p.id === 1);
+      if (defaultPokemon) setSelected(defaultPokemon.name);
+    } catch (error) {
+      console.error("Error loading pokemons:", error);
+      toast.error("Error loading Pokémons");
+    }
+  };
+  fetchPokemons();
+}, []);
 
   // Cargar todos los counters al inicio
   useEffect(() => {
@@ -192,7 +195,7 @@ const handleSave = async () => {
     <Container sx={{ height: "100vh", display: "flex", flexDirection: "column", gap: 3, py: 3 }}>
       <ToastContainer position="top-right" autoClose={3000} hideProgressBar />
       <Tooltip title="Return to Draft" placement="right">
-        <Fab color="primary" onClick={() => navigate("/")} sx={{ position: "fixed", top: 24, left: 24, zIndex: 10 }}>
+        <Fab color="primary" onClick={() => navigate("/")} sx={{ position: "fixed", top: 24, left: 24, zIndex: 10, bgcolor: "black" }}>
           <ArrowBackIcon />
         </Fab>
       </Tooltip>
