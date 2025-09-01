@@ -73,8 +73,16 @@ useEffect(() => {
     fetchCounters();
   }, []);
 
+
+
   const selectedPokemon = allPokemons.find((p) => p.name === selected);
-  const others = selectedPokemon ? allPokemons.filter((p) => p.name !== selectedPokemon.name) : [];
+  const roleOrder = ["attacker", "all-rounder", "speedster", "defender", "supporter"];
+
+const others = selectedPokemon
+  ? allPokemons
+      .filter((p) => p.name !== selectedPokemon.name)
+      .sort((a, b) => roleOrder.indexOf(a.role.toLowerCase()) - roleOrder.indexOf(b.role.toLowerCase()))
+  : [];
 
   // Sincronizar counters cuando cambia el Pokémon seleccionado
   useEffect(() => {
