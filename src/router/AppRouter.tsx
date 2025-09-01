@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import App from "../pages/App";
 import Settings from "../pages/Settings";
+import PokemonCrud from "../pages/PokemonCrud"; 
 
 export default function AppRouter() {
   return (
@@ -8,6 +9,7 @@ export default function AppRouter() {
       <Routes>
         <Route path="/" element={<App />} />
         <Route path="/settings" element={<Settings />} />
+        <Route path="/pokemons" element={<PokemonCrud />} /> 
       </Routes>
     </BrowserRouter>
   );

@@ -260,7 +260,7 @@ const handleSave = async () => {
             <TableHead>
               <TableRow>
                 <TableCell>Pokémon</TableCell>
-                <TableCell align="center">Counter %</TableCell>
+                <TableCell align="left">Counter %</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -272,15 +272,46 @@ const handleSave = async () => {
                       {p.name}
                     </Box>
                   </TableCell>
-                  <TableCell align="center" sx={{ width: 200 }}>
-                    <Slider
-                      value={counters[selectedPokemon.name]?.[p.name]?.value ?? 0}
-                      onChange={(_, v) => handleChangeCounter(selectedPokemon.name, p.name, v as number)}
-                      min={1}
-                      max={100}
-                      valueLabelDisplay="auto"
-                    />
-                  </TableCell>
+                  <TableCell align="center" sx={{ width: 300 }}>
+  <Box display="flex" alignItems="center" gap={2}>
+    <Slider
+      value={counters[selectedPokemon.name]?.[p.name]?.value ?? 0}
+      onChange={(_, v) => handleChangeCounter(selectedPokemon.name, p.name, v as number)}
+      min={1}
+      max={100}
+      valueLabelDisplay="auto"
+      sx={{
+        flex: 1,
+        '& .MuiSlider-thumb': {
+          backgroundColor: () => {
+            const val = counters[selectedPokemon.name]?.[p.name]?.value ?? 0;
+            if (val < 40) return 'red';
+            if (val < 60) return 'orange';
+            return 'green';
+          },
+        },
+        '& .MuiSlider-track': {
+          backgroundColor: () => {
+            const val = counters[selectedPokemon.name]?.[p.name]?.value ?? 0;
+            if (val < 40) return 'red';
+            if (val < 60) return 'orange';
+            return 'green';
+          },
+          border: 'none',
+        },
+        '& .MuiSlider-rail': {
+          opacity: 0.3,
+          backgroundColor: 'gray',
+        },
+      }}
+    />
+
+    {/* porcentaje */}
+    <Typography variant="body1" sx={{ minWidth: 40, textAlign: "center" }}>
+      {counters[selectedPokemon.name]?.[p.name]?.value ?? 0}%
+    </Typography>
+  </Box>
+</TableCell>
                 </TableRow>
               ))}
             </TableBody>

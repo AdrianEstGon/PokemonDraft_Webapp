@@ -23,6 +23,7 @@ import {
   CircularProgress,
 } from "@mui/material";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
+import CatchingPokemonIcon from "@mui/icons-material/CatchingPokemon";
 import { DraftAdvisor, type Counter } from "./DraftAdvisor";
 import SettingsIcon from "@mui/icons-material/Settings";
 import { useNavigate } from "react-router-dom";
@@ -322,6 +323,25 @@ export default function App() {
     <SettingsIcon />
   </Fab>
 </Tooltip>
+ {/* Botón Pokemons */}
+      <Tooltip title="Pokemons" placement="left">
+        <Fab
+          onClick={() => navigate("/pokemons")}
+          sx={{
+            position: "fixed",
+            bottom: 90, // lo movemos arriba del otro para que no se solapen
+            right: 24,
+            zIndex: 10,
+            bgcolor: "purple",
+            color: "white",
+            "&:hover": {
+              bgcolor: "#6a1b9a",
+            },
+          }}
+        >
+          <CatchingPokemonIcon />
+        </Fab>
+      </Tooltip>
 
       </Box>
     );
