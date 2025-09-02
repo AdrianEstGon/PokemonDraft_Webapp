@@ -117,7 +117,7 @@ export default function PokemonCrud() {
 
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
         <Typography variant="h4" fontWeight="bold">
-          Pokémon Management
+          Pokemon Management
         </Typography>
         <Button variant="contained" startIcon={<Add />} onClick={() => handleOpenDialog()}>
           Add Pokemon
@@ -164,7 +164,7 @@ export default function PokemonCrud() {
               {!loading && pokemons.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={5} align="center">
-                    No Pokémons found.
+                    No Pokemons found.
                   </TableCell>
                 </TableRow>
               )}
