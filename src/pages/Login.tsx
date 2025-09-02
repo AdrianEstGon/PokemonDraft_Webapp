@@ -23,11 +23,10 @@ const LoginPage: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [loading, setLoading] = useState(false); // 🔹 Nuevo estado loading
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
-  // 🔹 Password strength validator
   const isPasswordSecure = (pwd: string) => {
     const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
     return regex.test(pwd);
@@ -35,28 +34,24 @@ const LoginPage: React.FC = () => {
 
   const handleAuth = async () => {
     try {
-      setLoading(true); // 🔹 Activamos loading
+      setLoading(true);
       if (tab === 0) {
-        // LOGIN
         const res = await login(username, password);
         localStorage.setItem("token", res.token);
         localStorage.setItem("role", res.role);
         toast.success("Login successful");
         navigate("/app");
       } else {
-        // SIGN UP
         if (password !== confirmPassword) {
           toast.error("Passwords do not match");
           return;
         }
-
         if (!isPasswordSecure(password)) {
           toast.error(
             "Password must be at least 8 characters, include uppercase, lowercase, a number, and a symbol"
           );
           return;
         }
-
         await register(username, password);
         toast.success("User registered. Please login now");
         setTab(0);
@@ -68,7 +63,7 @@ const LoginPage: React.FC = () => {
         toast.error(err.response?.data || "Authentication error");
       }
     } finally {
-      setLoading(false); // 🔹 Desactivamos loading
+      setLoading(false);
     }
   };
 
@@ -79,10 +74,24 @@ const LoginPage: React.FC = () => {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        background: "linear-gradient(135deg, #a2d2ff, #bde0fe)",
+        backgroundColor: "#a2d2ff",
+        backgroundImage: `url("/logo.png")`,
+        backgroundRepeat: "no-repeat",
+        backgroundPosition: "center",
+        backgroundSize: "60%",
+        backgroundBlendMode: "overlay",
       }}
     >
-      <Paper elevation={6} sx={{ p: 4, width: 350, borderRadius: 3 }}>
+      <Paper
+        elevation={6}
+        sx={{
+          p: 4,
+          width: 350,
+          borderRadius: 3,
+          backgroundColor: "rgba(255,255,255,0.85)", // 🔹 transparente
+          backdropFilter: "blur(6px)", // 🔹 efecto blur opcional para mayor legibilidad
+        }}
+      >
         <Typography variant="h5" textAlign="center" mb={2}>
           Pokemon Unite Drafter
         </Typography>
@@ -92,7 +101,6 @@ const LoginPage: React.FC = () => {
           <Tab label="Sign up" />
         </Tabs>
 
-        {/* 🔹 Login Panel */}
         {tab === 0 && (
           <Box mt={2}>
             <TextField
@@ -128,14 +136,13 @@ const LoginPage: React.FC = () => {
               variant="contained"
               sx={{ mt: 3, borderRadius: 2 }}
               onClick={handleAuth}
-              disabled={loading} // 🔹 Deshabilitamos botón mientras carga
+              disabled={loading}
             >
               {loading ? <CircularProgress size={24} color="inherit" /> : "Login"}
             </Button>
           </Box>
         )}
 
-        {/* 🔹 Sign Up Panel */}
         {tab === 1 && (
           <Box mt={2}>
             <TextField
@@ -191,7 +198,7 @@ const LoginPage: React.FC = () => {
               variant="contained"
               sx={{ mt: 3, borderRadius: 2 }}
               onClick={handleAuth}
-              disabled={loading} // 🔹 Deshabilitamos botón mientras carga
+              disabled={loading}
             >
               {loading ? <CircularProgress size={24} color="inherit" /> : "Sign up"}
             </Button>
