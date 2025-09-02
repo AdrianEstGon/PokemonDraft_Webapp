@@ -84,6 +84,12 @@ const others = selectedPokemon
       .sort((a, b) => roleOrder.indexOf(a.role.toLowerCase()) - roleOrder.indexOf(b.role.toLowerCase()))
   : [];
 
+  const orderedPokemons = [...allPokemons].sort(
+  (a, b) =>
+    roleOrder.indexOf(a.role.toLowerCase()) -
+    roleOrder.indexOf(b.role.toLowerCase())
+);
+
   // Sincronizar counters cuando cambia el Pokémon seleccionado
   useEffect(() => {
     if (!selectedPokemon) return;
@@ -216,12 +222,13 @@ const handleSave = async () => {
 
         <Box sx={{ display: "flex", flexDirection: "row", gap: 2, alignItems: "center", width: "100%" }}>
           <Autocomplete
-            options={allPokemons.map((p) => p.name)}
-            value={selected}
-            onChange={(_, value) => setSelected(value)}
-            renderInput={(params) => <TextField {...params} label="Select Pokémon" />}
-            sx={{ flex: 1 }}
-          />
+  options={orderedPokemons.map((p) => p.name)}
+  value={selected}
+  onChange={(_, value) => setSelected(value)}
+  renderInput={(params) => <TextField {...params} label="Select Pokémon" />}
+  sx={{ flex: 1 }}
+/>
+
 
           <Box sx={{ display: "flex", gap: 2 }}>
             <Button
