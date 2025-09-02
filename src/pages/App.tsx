@@ -29,6 +29,8 @@ import SettingsIcon from "@mui/icons-material/Settings";
 import { useNavigate } from "react-router-dom";
 import { getPokemons } from "../services/PokemonService";
 import { getCounters } from "../services/CounterService";
+import LogoutIcon from "@mui/icons-material/Logout";
+import PeopleIcon from "@mui/icons-material/People";
 
 type Team = "ALLY" | "ENEMY";
 type Phase = "BAN" | "PICK";
@@ -56,6 +58,9 @@ export default function App() {
   const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
+
+  // Obtener rol del usuario
+  const role = localStorage.getItem("role"); // admin o user
 
   // 1. Cargar pokemons
   useEffect(() => {
@@ -225,7 +230,7 @@ export default function App() {
           justifyContent: "center",
           flexDirection: "column",
           gap: 2,
-          backgroundColor: "#66b6f8",  
+          backgroundColor: "#66b6f8",
         }}
       >
         <CircularProgress size={80} thickness={4} />
@@ -247,106 +252,139 @@ export default function App() {
           justifyContent: "center",
           flexDirection: "column",
           gap: 3,
-           backgroundColor: "#66b6f8",  
+          background: "linear-gradient(135deg, #a2d2ff, #bde0fe)",
         }}
       >
         <Container
-  sx={{
-    backgroundColor: "#fbfbfb", // fondo claro
-    borderRadius: "50%",
-    width: { xs: 280, sm: 400, md: 500 },
-    height: { xs: 280, sm: 400, md: 500 },
-    p: { xs: 2, sm: 4 },
-    textAlign: "center",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-
-    // sombra y efecto de relieve
-    boxShadow: "0 10px 25px rgba(0,0,0,0.25), 0 6px 6px rgba(0,0,0,0.22)",
-    transition: "transform 0.3s, box-shadow 0.3s",
-
-    "&:hover": {
-      transform: "translateY(-5px)", // levanta ligeramente
-      boxShadow: "0 15px 35px rgba(0,0,0,0.3), 0 10px 10px rgba(0,0,0,0.25)",
-    },
-  }}
->
-  <Typography variant="h4" gutterBottom fontWeight="bold">
-    Pokemon Unite Draft
-  </Typography>
-  <Typography variant="h6" gutterBottom>
-    Who bans first?
-  </Typography>
-  <Stack
-    direction={{ xs: "column", sm: "row" }}
-    spacing={2}
-    justifyContent="center"
-    sx={{ mt: 2 }}
-  >
-    <Button
-      variant="contained"
-      color="primary"
-      size="large"
-      onClick={() => setWhoStarts("ALLY")}
-    >
-      Allies
-    </Button>
-    <Button
-      variant="contained"
-      color="error"
-      size="large"
-      onClick={() => setWhoStarts("ENEMY")}
-    >
-      Enemies
-    </Button>
-  </Stack>
-</Container>
-
-
-        <Tooltip title="Settings" placement="left">
-  <Fab
-    onClick={() => navigate("/settings")}
-    sx={{
-      position: "fixed",
-      bottom: 24,
-      right: 24,
-      zIndex: 10,
-      bgcolor: "black",
-      color: "white",
-      "&:hover": {
-        bgcolor: "#333", // un gris más claro al pasar el mouse
-      },
-    }}
-  >
-    <SettingsIcon />
-  </Fab>
-</Tooltip>
- {/* Botón Pokemons */}
-      <Tooltip title="Pokemons" placement="left">
-        <Fab
-          onClick={() => navigate("/pokemons")}
           sx={{
-            position: "fixed",
-            bottom: 90, // lo movemos arriba del otro para que no se solapen
-            right: 24,
-            zIndex: 10,
-            bgcolor: "purple",
-            color: "white",
+            backgroundColor: "#fbfbfb",
+            borderRadius: "50%",
+            width: { xs: 280, sm: 400, md: 500 },
+            height: { xs: 280, sm: 400, md: 500 },
+            p: { xs: 2, sm: 4 },
+            textAlign: "center",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            boxShadow: "0 10px 25px rgba(0,0,0,0.25), 0 6px 6px rgba(0,0,0,0.22)",
+            transition: "transform 0.3s, box-shadow 0.3s",
             "&:hover": {
-              bgcolor: "#6a1b9a",
+              transform: "translateY(-5px)",
+              boxShadow:
+                "0 15px 35px rgba(0,0,0,0.3), 0 10px 10px rgba(0,0,0,0.25)",
             },
           }}
         >
-          <CatchingPokemonIcon />
-        </Fab>
-      </Tooltip>
+          <Typography variant="h4" gutterBottom fontWeight="bold">
+            Pokemon Unite Draft
+          </Typography>
+          <Typography variant="h6" gutterBottom>
+            Who bans first?
+          </Typography>
+          <Stack
+            direction={{ xs: "column", sm: "row" }}
+            spacing={2}
+            justifyContent="center"
+            sx={{ mt: 2 }}
+          >
+            <Button
+              variant="contained"
+              color="primary"
+              size="large"
+              onClick={() => setWhoStarts("ALLY")}
+            >
+              Allies
+            </Button>
+            <Button
+              variant="contained"
+              color="error"
+              size="large"
+              onClick={() => setWhoStarts("ENEMY")}
+            >
+              Enemies
+            </Button>
+          </Stack>
+        </Container>
 
+        {/* FABs Condicionados por rol */}
+        {role === "admin" && (
+          <>
+            <Tooltip title="Settings" placement="left">
+              <Fab
+                onClick={() => navigate("/settings")}
+                sx={{
+                  position: "fixed",
+                  bottom: 24,
+                  right: 24,
+                  zIndex: 10,
+                  bgcolor: "black",
+                  color: "white",
+                  "&:hover": { bgcolor: "#333" },
+                }}
+              >
+                <SettingsIcon />
+              </Fab>
+            </Tooltip>
+            <Tooltip title="Pokemons" placement="left">
+              <Fab
+                onClick={() => navigate("/pokemons")}
+                sx={{
+                  position: "fixed",
+                  bottom: 90,
+                  right: 24,
+                  zIndex: 10,
+                  bgcolor: "purple",
+                  color: "white",
+                  "&:hover": { bgcolor: "#6a1b9a" },
+                }}
+              >
+                <CatchingPokemonIcon />
+              </Fab>
+            </Tooltip>
+            <Tooltip title="User Management" placement="left">
+              <Fab
+                onClick={() => navigate("/users")}
+                sx={{
+                  position: "fixed",
+                  bottom: 156,
+                  right: 24,
+                  zIndex: 10,
+                  bgcolor: "green",
+                  color: "white",
+                  "&:hover": { bgcolor: "#2e7d32" },
+                }}
+              >
+                <PeopleIcon />
+              </Fab>
+            </Tooltip>
+          </>
+        )}
+
+        {/* Logout siempre visible */}
+        <Tooltip title="Cerrar sesión" placement="left">
+          <Fab
+            onClick={() => {
+              localStorage.removeItem("token");
+              localStorage.removeItem("role");
+              navigate("/"); // redirige al login
+            }}
+            sx={{
+              position: "fixed",
+              top: 24,
+              right: 24,
+              zIndex: 10,
+              bgcolor: "red",
+              color: "white",
+              "&:hover": { bgcolor: "#c62828" },
+            }}
+          >
+            <LogoutIcon />
+          </Fab>
+        </Tooltip>
       </Box>
     );
   }
-
   // UI del draft principal
   return (
     <Container

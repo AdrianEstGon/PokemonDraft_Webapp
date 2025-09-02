@@ -209,7 +209,7 @@ const handleSave = async () => {
     <Container sx={{ height: "100vh", display: "flex", flexDirection: "column", gap: 3, py: 3 }}>
       <ToastContainer position="top-right" autoClose={3000} hideProgressBar />
       <Tooltip title="Return to Draft" placement="right">
-        <Fab color="primary" onClick={() => navigate("/")} sx={{ position: "fixed", top: 24, left: 24, zIndex: 10, bgcolor: "black" }}>
+        <Fab color="primary" onClick={() => navigate("/app")} sx={{ position: "fixed", top: 24, left: 24, zIndex: 10, bgcolor: "black" }}>
           <ArrowBackIcon />
         </Fab>
       </Tooltip>

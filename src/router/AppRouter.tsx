@@ -1,15 +1,51 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import App from "../pages/App";
 import Settings from "../pages/Settings";
-import PokemonCrud from "../pages/PokemonCrud"; 
+import PokemonCrud from "../pages/PokemonCrud";
+import Login from "../pages/Login";
+import UserManagement from "../pages/UserManagement"; // 🔹 importar
+import PrivateRoute from "./PrivateRoute";
 
 export default function AppRouter() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<App />} />
-        <Route path="/settings" element={<Settings />} />
-        <Route path="/pokemons" element={<PokemonCrud />} /> 
+        {/* 🔹 Página por defecto */}
+        <Route path="/" element={<Login />} />
+
+        {/* 🔹 Rutas protegidas */}
+        <Route
+          path="/app"
+          element={
+            <PrivateRoute>
+              <App />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/settings"
+          element={
+            <PrivateRoute>
+              <Settings />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/pokemons"
+          element={
+            <PrivateRoute>
+              <PokemonCrud />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/users"
+          element={
+            <PrivateRoute>
+              <UserManagement />
+            </PrivateRoute>
+          }
+        />
       </Routes>
     </BrowserRouter>
   );
