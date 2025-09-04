@@ -21,6 +21,8 @@ import {
   Autocomplete,
   TextField,
   CircularProgress,
+  Checkbox,
+  FormControlLabel,
 } from "@mui/material";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import CatchingPokemonIcon from "@mui/icons-material/CatchingPokemon";
@@ -31,6 +33,8 @@ import { getPokemons } from "../services/PokemonService";
 import { getCounters } from "../services/CounterService";
 import LogoutIcon from "@mui/icons-material/Logout";
 import PeopleIcon from "@mui/icons-material/People";
+import BackpackIcon from "@mui/icons-material/Backpack";
+import {getUserPokemons } from "../services/BagService"; // importamos el servicio de la mochila
 
 type Team = "ALLY" | "ENEMY";
 type Phase = "BAN" | "PICK";
@@ -47,6 +51,7 @@ export default function App() {
   const [phase, setPhase] = useState<Phase>("BAN");
   const [step, setStep] = useState(0);
   const [classFilter, setClassFilter] = useState<ClassFilter>("ALL");
+  const [onlyMyPokemons, setOnlyMyPokemons] = useState(false);
 
   const [allyBans, setAllyBans] = useState<string[]>([]);
   const [enemyBans, setEnemyBans] = useState<string[]>([]);
@@ -54,31 +59,28 @@ export default function App() {
   const [enemyPicks, setEnemyPicks] = useState<string[]>([]);
   const [searchText, setSearchText] = useState("");
   const [allPokemons, setAllPokemons] = useState<any[]>([]);
+  const [userPokemons, setUserPokemons] = useState<string[]>([]);
   const [counters, setCounters] = useState<Counter[]>([]);
   const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
-
-  // Obtener rol del usuario
   const role = localStorage.getItem("role"); // admin o user
+  const userId = localStorage.getItem("userId");
 
-  // 1. Cargar pokemons
+  // Cargar pokemons y los del usuario
   useEffect(() => {
     setLoading(true);
-    getPokemons()
-      .then(setAllPokemons)
+    Promise.all([
+      getPokemons().then(setAllPokemons),
+      userId ? getUserPokemons(Number(userId)).then((p: any[]) => setUserPokemons(p.map((x) => x.name))) : Promise.resolve([]),
+      getCounters().then(setCounters),
+    ])
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, []);
+  }, [userId]);
 
-  useEffect(() => {
-    getCounters().then(setCounters).catch(console.error);
-  }, []);
-
-  // 2. Crear advisor
   const advisor = useMemo(() => new DraftAdvisor(counters), [counters]);
 
-  // 3. Orden de bans y picks
   const banOrder: Team[] = whoStarts
     ? [
         whoStarts,
@@ -108,19 +110,17 @@ export default function App() {
 
   const totalSteps = phase === "BAN" ? banOrder.length : pickOrder.length;
 
-  // 4. Filtrar pokemons disponibles
   const available = allPokemons.filter(
     (p) =>
-      ![...allyBans, ...enemyBans, ...allyPicks, ...enemyPicks].includes(
-        p.name
-      ) && (classFilter === "ALL" || p.role === classFilter)
+      ![...allyBans, ...enemyBans, ...allyPicks, ...enemyPicks].includes(p.name) &&
+      (classFilter === "ALL" || p.role === classFilter) &&
+      (!onlyMyPokemons || userPokemons.includes(p.name))
   );
 
   const filteredAvailable = available.filter((p) =>
     p.name.toLowerCase().includes(searchText.toLowerCase())
   );
 
-  // 5. Calcular recomendaciones
   const recommendations = useMemo(() => {
     if (phase === "PICK" && currentTeam === "ALLY") {
       return advisor.recommend(
@@ -131,14 +131,12 @@ export default function App() {
     return filteredAvailable.map((p) => ({ pokemon: p.name, score: 0 }));
   }, [phase, step, enemyPicks, filteredAvailable, advisor, currentTeam]);
 
-  // 6. Ordenar disponibles según recomendación
   const sortedAvailable = [...filteredAvailable].sort(
     (a, b) =>
       recommendations.findIndex((r) => r.pokemon === a.name) -
       recommendations.findIndex((r) => r.pokemon === b.name)
   );
 
-  // 7. Color por clase
   const getClassColor = (pokemonName: string) => {
     const p = allPokemons.find((p) => p.name === pokemonName);
     if (!p) return "#f0f0f0";
@@ -185,6 +183,7 @@ export default function App() {
     setAllyPicks([]);
     setEnemyPicks([]);
     setClassFilter("ALL");
+    setOnlyMyPokemons(false);
   };
 
   const renderTableCell = (pokemonName?: string, isAlly?: boolean) => (
@@ -360,6 +359,23 @@ export default function App() {
             </Tooltip>
           </>
         )}
+         {/* 🔹 FAB para la mochila */}
+    <Tooltip title="Bag" placement="left">
+      <Fab
+        onClick={() => navigate("/bag")}
+        sx={{
+          position: "fixed",
+          bottom: 222,
+          right: 24,
+          zIndex: 10,
+          bgcolor: "orange",
+          color: "white",
+          "&:hover": { bgcolor: "#ef6c00" },
+        }}
+      >
+        <BackpackIcon />
+      </Fab>
+    </Tooltip>
 
         {/* Logout siempre visible */}
         <Tooltip title="Cerrar sesión" placement="left">
@@ -557,12 +573,34 @@ export default function App() {
                 freeSolo
                 clearOnEscape
               />
+              
             </Box>
+             <Box
+                sx={{
+                  mb: 1,
+                  width: "100%",
+                  display: "flex",
+                  flexDirection: { xs: "column", sm: "row" },
+                  gap: 1,
+                  alignItems: "center",
+                  justifyContent: { xs: "flex-start", sm: "space-between" }, // aquí está el cambio
+                }}
+              >
+                <Typography variant="h6" gutterBottom fontWeight="bold">
+                  Available Pokemon
+                </Typography>
 
-            <Typography variant="h6" gutterBottom fontWeight="bold">
-              Available Pokémon
-            </Typography>
-
+                {/* Checkbox Only my Pokémons */}
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={onlyMyPokemons}
+                      onChange={(e) => setOnlyMyPokemons(e.target.checked)}
+                    />
+                  }
+                  label="Only my Pokemons"
+                />
+              </Box>
             <Box
               sx={{
                 flex: 1,

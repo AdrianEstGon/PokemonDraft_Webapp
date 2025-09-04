@@ -39,6 +39,7 @@ const LoginPage: React.FC = () => {
         const res = await login(username, password);
         localStorage.setItem("token", res.token);
         localStorage.setItem("role", res.role);
+        localStorage.setItem("userId", res.userId.toString());
         toast.success("Login successful");
         navigate("/app");
       } else {

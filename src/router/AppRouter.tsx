@@ -3,7 +3,8 @@ import App from "../pages/App";
 import Settings from "../pages/Settings";
 import PokemonCrud from "../pages/PokemonCrud";
 import Login from "../pages/Login";
-import UserManagement from "../pages/UserManagement"; // 🔹 importar
+import UserManagement from "../pages/UserManagement"; 
+import UserBagPage from "../pages/UserBag"; // 🔹 importar la mochila
 import PrivateRoute from "./PrivateRoute";
 
 export default function AppRouter() {
@@ -43,6 +44,15 @@ export default function AppRouter() {
           element={
             <PrivateRoute>
               <UserManagement />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/bag"
+          element={
+            <PrivateRoute>
+              {/* 🔹 Aquí pasamos el userId */}
+              <UserBagPage userId={Number(localStorage.getItem("userId"))} />
             </PrivateRoute>
           }
         />
