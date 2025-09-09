@@ -28,7 +28,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useNavigate } from "react-router-dom";
-import { getUsers, deleteUser, updateUser } from "../services/UserService";
+import { getUsers, deleteUser, updateUser } from "../../services/UserService";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -112,19 +112,9 @@ export default function UserManagement() {
   return (
     <Container sx={{ py: 4, maxWidth: "lg" }}>
       <ToastContainer position="top-right" autoClose={3000} />
-      <Tooltip title="Return to Draft" placement="right">
-        <Fab
-          color="primary"
-          onClick={() => navigate("/app")}
-          sx={{ position: "fixed", top: 24, left: 24, zIndex: 10, bgcolor: "black" }}
-        >
-          <ArrowBackIcon />
-        </Fab>
-      </Tooltip>
-
       {/* 🔹 Header */}
-      <Stack direction="row" alignItems="center" justifyContent="space-between" mb={3}>
-        <Typography variant="h4" fontWeight="bold">
+      <Stack direction="row" alignItems="center" justifyContent="space-between" mb={3} marginTop={5}>
+        <Typography variant="h4" fontWeight="bold" textAlign={"center"} flexGrow={1}>
           User Management
         </Typography>
         <Box sx={{ width: 48 }} /> {/* placeholder para balancear el header */}

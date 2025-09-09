@@ -26,7 +26,7 @@ import {
 } from "@mui/material";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import CatchingPokemonIcon from "@mui/icons-material/CatchingPokemon";
-import { DraftAdvisor, type Counter } from "./DraftAdvisor";
+import { DraftAdvisor, type Counter } from "./draft/DraftAdvisor";
 import SettingsIcon from "@mui/icons-material/Settings";
 import { useNavigate } from "react-router-dom";
 import { getPokemons } from "../services/PokemonService";

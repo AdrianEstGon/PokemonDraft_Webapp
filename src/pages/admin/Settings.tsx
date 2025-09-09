@@ -18,8 +18,8 @@ import {
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useNavigate } from "react-router-dom";
-import { getPokemons } from "../services/PokemonService";
-import { getCounters, createCounter, updateCounter } from "../services/CounterService";
+import { getPokemons } from "../../services/PokemonService";
+import { getCounters, createCounter, updateCounter } from "../../services/CounterService";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { CircularProgress } from "@mui/material";
@@ -208,14 +208,9 @@ const handleSave = async () => {
   return (
     <Container sx={{ height: "100vh", display: "flex", flexDirection: "column", gap: 3, py: 3 }}>
       <ToastContainer position="top-right" autoClose={3000} hideProgressBar />
-      <Tooltip title="Return to Draft" placement="right">
-        <Fab color="primary" onClick={() => navigate("/app")} sx={{ position: "fixed", top: 24, left: 24, zIndex: 10, bgcolor: "black" }}>
-          <ArrowBackIcon />
-        </Fab>
-      </Tooltip>
 
       <Box sx={{ display: "flex", flexDirection: "column", gap: 2, flexShrink: 0, backgroundColor: "rgba(249, 248, 248, 0.8)", borderRadius: 2,
-          padding: 4, }}>
+          padding: 4, marginTop: 5 }}>
         <Typography variant="h3" fontWeight="bold">
           Select a Pokémon to configure its counters ⚙️
         </Typography>

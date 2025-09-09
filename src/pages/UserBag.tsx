@@ -16,12 +16,8 @@ import {
   CircularProgress,
   Paper,
   Chip,
-  Tooltip,
-  Fab,
 } from "@mui/material";
 import { toast, ToastContainer } from "react-toastify";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import { useNavigate } from "react-router-dom";
 
 interface Pokemon {
   id: number;
@@ -34,7 +30,6 @@ interface UserBagPageProps {
   userId: number;
 }
 const UserBagPage = ({ userId }: UserBagPageProps) => {
-  const navigate = useNavigate();
   const [allPokemons, setAllPokemons] = useState<Pokemon[]>([]);
   const [userPokemons, setUserPokemons] = useState<number[]>([]);
   const [selected, setSelected] = useState<number[]>([]);
@@ -132,13 +127,8 @@ const UserBagPage = ({ userId }: UserBagPageProps) => {
   );
 
   return (
-    <Box p={3} display="flex" flexDirection="column" height="100%">
+    <Box p={3} display="flex" flexDirection="column" height="100%" marginTop={6}>
         <ToastContainer position="top-right" autoClose={3000} hideProgressBar />
-      <Tooltip title="Return to Draft" placement="right">
-        <Fab color="primary" onClick={() => navigate("/app")} sx={{ position: "fixed", top: 24, left: 24, zIndex: 10, bgcolor: "black" }}>
-          <ArrowBackIcon />
-        </Fab>
-      </Tooltip>
       <Typography variant="h4" gutterBottom textAlign="center">
         My Pokemons
       </Typography>

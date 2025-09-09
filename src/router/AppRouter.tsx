@@ -1,25 +1,40 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import App from "../pages/App";
-import Settings from "../pages/Settings";
-import PokemonCrud from "../pages/PokemonCrud";
+import Settings from "../pages/admin/Settings";
+import PokemonCrud from "../pages/admin/PokemonCrud";
 import Login from "../pages/Login";
-import UserManagement from "../pages/UserManagement"; 
-import UserBagPage from "../pages/UserBag"; // 🔹 importar la mochila
+import UserManagement from "../pages/admin/UserManagement"; 
+import UserBagPage from "../pages/UserBag"; 
+import DraftPage from "../pages/draft/DraftPage"; // 🔹 importamos el draft
 import PrivateRoute from "./PrivateRoute";
+import StartPage from "../pages/draft/StartPage";
+import NavBar from "../pages/NavBar";
+
+function LayoutWithNav({ children }: { children: React.ReactNode }) {
+  const role = localStorage.getItem("role");
+  return (
+    <>
+      <NavBar role={role} />
+      {children}
+      
+    </>
+  );
+}
 
 export default function AppRouter() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* 🔹 Página por defecto */}
+        {/* 🔹 Página pública */}
         <Route path="/" element={<Login />} />
 
-        {/* 🔹 Rutas protegidas */}
+        {/* 🔹 Rutas con navbar */}
         <Route
           path="/app"
           element={
             <PrivateRoute>
-              <App />
+              <LayoutWithNav>
+                <StartPage />
+              </LayoutWithNav>
             </PrivateRoute>
           }
         />
@@ -27,7 +42,9 @@ export default function AppRouter() {
           path="/settings"
           element={
             <PrivateRoute>
-              <Settings />
+              <LayoutWithNav>
+                <Settings />
+              </LayoutWithNav>
             </PrivateRoute>
           }
         />
@@ -35,7 +52,9 @@ export default function AppRouter() {
           path="/pokemons"
           element={
             <PrivateRoute>
-              <PokemonCrud />
+              <LayoutWithNav>
+                <PokemonCrud />
+              </LayoutWithNav>
             </PrivateRoute>
           }
         />
@@ -43,7 +62,9 @@ export default function AppRouter() {
           path="/users"
           element={
             <PrivateRoute>
-              <UserManagement />
+              <LayoutWithNav>
+                <UserManagement />
+              </LayoutWithNav>
             </PrivateRoute>
           }
         />
@@ -51,8 +72,19 @@ export default function AppRouter() {
           path="/bag"
           element={
             <PrivateRoute>
-              {/* 🔹 Aquí pasamos el userId */}
-              <UserBagPage userId={Number(localStorage.getItem("userId"))} />
+              <LayoutWithNav>
+                <UserBagPage userId={Number(localStorage.getItem("userId"))} />
+              </LayoutWithNav>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/draft"
+          element={
+            <PrivateRoute>
+              <LayoutWithNav>
+                <DraftPage />
+              </LayoutWithNav>
             </PrivateRoute>
           }
         />

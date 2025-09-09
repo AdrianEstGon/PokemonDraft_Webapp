@@ -19,14 +19,13 @@ import {
   TextField,
   Typography,
   Tooltip,
-  Fab,
   CircularProgress,
+  Autocomplete,
 } from "@mui/material";
-import { Add, Edit, Delete, ArrowBack as ArrowBackIcon } from "@mui/icons-material";
-import { getPokemons, createPokemon, updatePokemon, deletePokemon } from "../services/PokemonService";
+import { Add, Edit, Delete } from "@mui/icons-material";
+import { getPokemons, createPokemon, updatePokemon, deletePokemon } from "../../services/PokemonService";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { useNavigate } from "react-router-dom";
 
 interface Pokemon {
   id: number;
@@ -35,8 +34,9 @@ interface Pokemon {
   role: string;
 }
 
+
+
 export default function PokemonCrud() {
-  const navigate = useNavigate();
   const [pokemons, setPokemons] = useState<Pokemon[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
@@ -44,6 +44,7 @@ export default function PokemonCrud() {
 
   const [openDialog, setOpenDialog] = useState(false);
   const [editingPokemon, setEditingPokemon] = useState<Pokemon | null>(null);
+  const roleOptions = ["Attacker", "Speedster", "All-Rounder", "Supporter", "Defender"];
 
   const [form, setForm] = useState({ name: "", imageUrl: "", role: "" });
 
@@ -111,20 +112,9 @@ export default function PokemonCrud() {
     <Container sx={{ py: 4, maxWidth: "lg" }}>
       <ToastContainer position="top-right" autoClose={3000} />
 
-      {/* 🔹 Return FAB */}
-      <Tooltip title="Return to Draft" placement="right">
-        <Fab
-          color="primary"
-          onClick={() => navigate("/app")}
-          sx={{ position: "fixed", top: 24, left: 24, zIndex: 10, bgcolor: "black" }}
-        >
-          <ArrowBackIcon />
-        </Fab>
-      </Tooltip>
-
       {/* 🔹 Header */}
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h4" fontWeight="bold">
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3} mt={5}>
+        <Typography variant="h4" fontWeight="bold" textAlign={"center"} flexGrow={1}>
           Pokemon Management
         </Typography>
         <Button variant="contained" startIcon={<Add />} onClick={() => handleOpenDialog()}>
@@ -218,12 +208,18 @@ export default function PokemonCrud() {
             fullWidth
             margin="dense"
           />
-          <TextField
-            label="Role"
+          <Autocomplete
+            options={roleOptions}
             value={form.role}
-            onChange={(e) => setForm({ ...form, role: e.target.value })}
-            fullWidth
-            margin="dense"
+            onChange={(_, newValue) => setForm({ ...form, role: newValue || "" })}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Role"
+                margin="dense"
+                fullWidth
+              />
+            )}
           />
         </DialogContent>
         <DialogActions>
