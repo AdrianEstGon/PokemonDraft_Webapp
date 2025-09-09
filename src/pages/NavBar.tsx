@@ -5,6 +5,10 @@ import {
   Typography,
   Box,
   Tooltip,
+  Menu,
+  MenuItem,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import SettingsIcon from "@mui/icons-material/Settings";
 import CatchingPokemonIcon from "@mui/icons-material/CatchingPokemon";
@@ -12,7 +16,9 @@ import PeopleIcon from "@mui/icons-material/People";
 import BackpackIcon from "@mui/icons-material/Backpack";
 import LogoutIcon from "@mui/icons-material/Logout";
 import HomeIcon from "@mui/icons-material/Home";
+import MenuIcon from "@mui/icons-material/Menu";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 interface NavBarProps {
   role: string | null;
@@ -20,6 +26,11 @@ interface NavBarProps {
 
 export default function NavBar({ role }: NavBarProps) {
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
+
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
 
   const handleNav = (path: string) => {
     if (path === "logout") {
@@ -28,62 +39,62 @@ export default function NavBar({ role }: NavBarProps) {
     } else {
       navigate(path);
     }
+    setAnchorEl(null); // cerrar menú si estaba abierto
   };
 
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const navItems = [
+    { title: "Home", icon: <HomeIcon />, path: "/app" },
+    ...(role === "admin"
+      ? [
+          { title: "Settings", icon: <SettingsIcon />, path: "/settings" },
+          { title: "Pokémons", icon: <CatchingPokemonIcon />, path: "/pokemons" },
+          { title: "Users", icon: <PeopleIcon />, path: "/users" },
+        ]
+      : []),
+    { title: "Bag", icon: <BackpackIcon />, path: "/bag" },
+    { title: "Logout", icon: <LogoutIcon />, path: "logout" },
+  ];
+
   return (
-    <AppBar
-      position="fixed"
-      sx={{
-        top: 0,
-        left: 0,
-        right: 0,
-        backgroundColor: "#1976d2",
-        zIndex: 20,
-      }}
-    >
+    <AppBar position="fixed" sx={{ zIndex: 20 }}>
       <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
-        {/* Logo o título */}
         <Typography variant="h6" fontWeight="bold">
           Pokemon Unite Drafter
         </Typography>
 
-        {/* Botones de navegación con tooltips */}
-        <Box sx={{ display: "flex", gap: 1 }}>
-            <Tooltip title="Home">
-                <IconButton color="inherit" onClick={() => handleNav("/app")}>
-                  <HomeIcon />
-                </IconButton>
-              </Tooltip>
-          {role === "admin" && (
-            <>
-              <Tooltip title="Settings">
-                <IconButton color="inherit" onClick={() => handleNav("/settings")}>
-                  <SettingsIcon />
-                </IconButton>
-              </Tooltip>
-              <Tooltip title="Pokémons">
-                <IconButton color="inherit" onClick={() => handleNav("/pokemons")}>
-                  <CatchingPokemonIcon />
-                </IconButton>
-              </Tooltip>
-              <Tooltip title="Users">
-                <IconButton color="inherit" onClick={() => handleNav("/users")}>
-                  <PeopleIcon />
-                </IconButton>
-              </Tooltip>
-            </>
-          )}
-          <Tooltip title="Bag">
-            <IconButton color="inherit" onClick={() => handleNav("/bag")}>
-              <BackpackIcon />
+        {isSmallScreen ? (
+          <>
+            <IconButton color="inherit" onClick={handleMenuOpen}>
+              <MenuIcon />
             </IconButton>
-          </Tooltip>
-          <Tooltip title="Logout">
-            <IconButton color="inherit" onClick={() => handleNav("logout")}>
-              <LogoutIcon />
-            </IconButton>
-          </Tooltip>
-        </Box>
+            <Menu
+              anchorEl={anchorEl}
+              open={open}
+              onClose={() => setAnchorEl(null)}
+            >
+              {navItems.map((item) => (
+                <MenuItem key={item.title} onClick={() => handleNav(item.path)}>
+                  {item.icon}
+                  <Typography sx={{ ml: 1 }}>{item.title}</Typography>
+                </MenuItem>
+              ))}
+            </Menu>
+          </>
+        ) : (
+          <Box sx={{ display: "flex", gap: 1 }}>
+            {navItems.map((item) => (
+              <Tooltip key={item.title} title={item.title}>
+                <IconButton color="inherit" onClick={() => handleNav(item.path)}>
+                  {item.icon}
+                </IconButton>
+              </Tooltip>
+            ))}
+          </Box>
+        )}
       </Toolbar>
     </AppBar>
   );
