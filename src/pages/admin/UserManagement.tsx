@@ -22,12 +22,9 @@ import {
   Select,
   MenuItem,
   Stack,
-  Fab,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import { useNavigate } from "react-router-dom";
 import { getUsers, deleteUser, updateUser } from "../../services/UserService";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -39,7 +36,6 @@ interface User {
 }
 
 export default function UserManagement() {
-  const navigate = useNavigate();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);

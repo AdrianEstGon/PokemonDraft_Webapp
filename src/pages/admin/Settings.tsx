@@ -11,13 +11,9 @@ import {
   TableRow,
   TableCell,
   TableBody,
-  Fab,
-  Tooltip,
   Paper,
   Button,
 } from "@mui/material";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import { useNavigate } from "react-router-dom";
 import { getPokemons } from "../../services/PokemonService";
 import { getCounters, createCounter, updateCounter } from "../../services/CounterService";
 import { ToastContainer, toast } from "react-toastify";
@@ -26,7 +22,6 @@ import { CircularProgress } from "@mui/material";
 
 
 export default function Settings() {
-  const navigate = useNavigate();
   const [selected, setSelected] = useState<string | null>(null);
   const [counters, setCounters] = useState<Record<string, Record<string, { value: number; id?: number }>>>({});
   const [allPokemons, setAllPokemons] = useState<any[]>([]);
