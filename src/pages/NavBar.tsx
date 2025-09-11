@@ -17,6 +17,7 @@ import BackpackIcon from "@mui/icons-material/Backpack";
 import LogoutIcon from "@mui/icons-material/Logout";
 import HomeIcon from "@mui/icons-material/Home";
 import MenuIcon from "@mui/icons-material/Menu";
+import CasinoIcon from "@mui/icons-material/Casino"; // 🎲 simulador
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
@@ -56,6 +57,7 @@ export default function NavBar({ role }: NavBarProps) {
         ]
       : []),
     { title: "Bag", icon: <BackpackIcon />, path: "/bag" },
+    { title: "Simulator", icon: <CasinoIcon />, path: "/simulator" }, // 👈 nuevo acceso
     { title: "Logout", icon: <LogoutIcon />, path: "logout" },
   ];
 

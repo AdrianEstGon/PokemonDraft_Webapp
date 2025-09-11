@@ -4,10 +4,11 @@ import PokemonCrud from "../pages/admin/PokemonCrud";
 import Login from "../pages/Login";
 import UserManagement from "../pages/admin/UserManagement"; 
 import UserBagPage from "../pages/UserBag"; 
-import DraftPage from "../pages/draft/DraftPage"; // 🔹 importamos el draft
+import DraftPage from "../pages/draft/DraftPage";
 import PrivateRoute from "./PrivateRoute";
 import StartPage from "../pages/draft/StartPage";
 import NavBar from "../pages/NavBar";
+import SimulatorPage from "../pages/TeamSimulator"; // 👈 importa el simulador
 
 function LayoutWithNav({ children }: { children: React.ReactNode }) {
   const role = localStorage.getItem("role");
@@ -15,7 +16,6 @@ function LayoutWithNav({ children }: { children: React.ReactNode }) {
     <>
       <NavBar role={role} />
       {children}
-      
     </>
   );
 }
@@ -84,6 +84,17 @@ export default function AppRouter() {
             <PrivateRoute>
               <LayoutWithNav>
                 <DraftPage />
+              </LayoutWithNav>
+            </PrivateRoute>
+          }
+        />
+        {/* 🔹 Nuevo: Simulador */}
+        <Route
+          path="/simulator"
+          element={
+            <PrivateRoute>
+              <LayoutWithNav>
+                <SimulatorPage/>
               </LayoutWithNav>
             </PrivateRoute>
           }
