@@ -47,23 +47,28 @@ export default function NavBar({ role }: NavBarProps) {
     setAnchorEl(event.currentTarget);
   };
 
-  const navItems = [
+  // Botones admin
+  const adminItems = role === "admin"
+    ? [
+        { title: "Settings", icon: <SettingsIcon />, path: "/settings" },
+        { title: "Pokémons", icon: <CatchingPokemonIcon />, path: "/pokemons" },
+        { title: "Users", icon: <PeopleIcon />, path: "/users" },
+      ]
+    : [];
+
+  // Botones usuarios normales / comunes
+  const userItems = [
     { title: "Home", icon: <HomeIcon />, path: "/app" },
-    ...(role === "admin"
-      ? [
-          { title: "Settings", icon: <SettingsIcon />, path: "/settings" },
-          { title: "Pokémons", icon: <CatchingPokemonIcon />, path: "/pokemons" },
-          { title: "Users", icon: <PeopleIcon />, path: "/users" },
-        ]
-      : []),
+    { title: "Simulator", icon: <CasinoIcon />, path: "/simulator" },
     { title: "Bag", icon: <BackpackIcon />, path: "/bag" },
-    { title: "Simulator", icon: <CasinoIcon />, path: "/simulator" }, // 👈 nuevo acceso
-    { title: "Logout", icon: <LogoutIcon />, path: "logout" },
   ];
+
+  const logoutItem = { title: "Logout", icon: <LogoutIcon />, path: "logout" };
 
   return (
     <AppBar position="fixed" sx={{ zIndex: 20 }}>
       <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
+        {/* Título */}
         <Typography variant="h6" fontWeight="bold">
           Pokemon Unite Drafter
         </Typography>
@@ -78,7 +83,7 @@ export default function NavBar({ role }: NavBarProps) {
               open={open}
               onClose={() => setAnchorEl(null)}
             >
-              {navItems.map((item) => (
+              {[...userItems, ...adminItems, logoutItem].map((item) => (
                 <MenuItem key={item.title} onClick={() => handleNav(item.path)}>
                   {item.icon}
                   <Typography sx={{ ml: 1 }}>{item.title}</Typography>
@@ -87,14 +92,37 @@ export default function NavBar({ role }: NavBarProps) {
             </Menu>
           </>
         ) : (
-          <Box sx={{ display: "flex", gap: 1 }}>
-            {navItems.map((item) => (
-              <Tooltip key={item.title} title={item.title}>
-                <IconButton color="inherit" onClick={() => handleNav(item.path)}>
-                  {item.icon}
+          <Box sx={{ display: "flex", flex: 1, alignItems: "center" }}>
+            {/* Centrados */}
+            <Box sx={{ display: "flex", gap: 1, flex: 1, justifyContent: "center" }}>
+              {userItems.map((item) => (
+                <Tooltip key={item.title} title={item.title}>
+                  <IconButton color="inherit" onClick={() => handleNav(item.path)}>
+                    {item.icon}
+                  </IconButton>
+                </Tooltip>
+              ))}
+            </Box>
+
+            {/* Admin a la derecha */}
+            <Box sx={{ display: "flex", gap: 1, mr: 1 }}>
+              {adminItems.map((item) => (
+                <Tooltip key={item.title} title={item.title}>
+                  <IconButton color="inherit" onClick={() => handleNav(item.path)}>
+                    {item.icon}
+                  </IconButton>
+                </Tooltip>
+              ))}
+            </Box>
+
+            {/* Logout */}
+            <Box>
+              <Tooltip title={logoutItem.title}>
+                <IconButton color="inherit" onClick={() => handleNav(logoutItem.path)}>
+                  {logoutItem.icon}
                 </IconButton>
               </Tooltip>
-            ))}
+            </Box>
           </Box>
         )}
       </Toolbar>

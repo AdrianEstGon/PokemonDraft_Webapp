@@ -3,10 +3,12 @@ import type { Dispatch, SetStateAction } from "react";
 
 type ClassFilter = "ALL" | "Attacker" | "Defender" | "Supporter" | "All-Rounder" | "Speedster";
 
+type Phase = "ALLY_BANS" | "ENEMY_BANS" | "ASK_FIRST_PICK" | "PICK";
+
 interface DraftAvailableProps {
   available: any[];
   recommendations: { pokemon: string; score: number }[];
-  phase: "BAN" | "PICK";
+  phase: Phase;
   currentTeam: "ALLY" | "ENEMY" | null;
   onSelect: (pokemon: any) => void;
   classFilter: ClassFilter;

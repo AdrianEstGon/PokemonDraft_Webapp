@@ -3,12 +3,12 @@ import { getPokemons } from "../services/PokemonService";
 import {
   Box,
   Typography,
-  Grid,
   Card,
   CardMedia,
   Paper,
   IconButton,
   CircularProgress,
+  useMediaQuery,
 } from "@mui/material";
 import CasinoIcon from "@mui/icons-material/Casino";
 
@@ -26,7 +26,9 @@ export default function PokemonSimulatorPage() {
   const [loading, setLoading] = useState(false);
   const [animating, setAnimating] = useState(false);
 
-  // 🔹 Cargar todos los pokémons
+  const isMobile = useMediaQuery("(max-width:600px)");
+  const isTablet = useMediaQuery("(max-width:900px)");
+
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -37,21 +39,17 @@ export default function PokemonSimulatorPage() {
     fetchData();
   }, []);
 
-  // 🔹 Función de randomizador con animación
   const randomizeTeams = () => {
     if (allPokemons.length < 10 || animating) return;
 
     setAnimating(true);
-
     let interval: ReturnType<typeof setInterval>;
-    let counter = 0;
 
     interval = setInterval(() => {
       const shuffled = [...allPokemons].sort(() => Math.random() - 0.5);
       setTeamAlly(shuffled.slice(0, 5));
       setTeamEnemy(shuffled.slice(5, 10));
-      counter++;
-    }, 150); // cada 150ms cambia
+    }, 150);
 
     setTimeout(() => {
       clearInterval(interval);
@@ -59,95 +57,117 @@ export default function PokemonSimulatorPage() {
       setTeamAlly(finalShuffled.slice(0, 5));
       setTeamEnemy(finalShuffled.slice(5, 10));
       setAnimating(false);
-    }, 3000); // dura 3 segundos
+    }, 3000);
   };
 
-  const renderTeam = (team: (Pokemon | null)[], title: string, color: string) => (
-    <Paper
-      elevation={3}
-      sx={{
-        p: 2,
-        borderRadius: 3,
-        bgcolor: color,
-        width: "100%",
-        maxWidth: 600,
-        mb: 3,
-      }}
-    >
-      <Typography
-        variant="h6"
-        align="center"
-        fontWeight="bold"
-        sx={{ mb: 2, color: "white" }}
+  const renderTeam = (team: (Pokemon | null)[], title: string, color: string) => {
+    const cardWidth = isMobile ? 60 : isTablet ? 100 : 120;
+    const totalWidth = cardWidth * 5 + 4 * 8; // 5 cards + gaps (gap:1=8px)
+
+    return (
+      <Paper
+        elevation={3}
+        sx={{
+          p: 1.5,
+          borderRadius: 3,
+          bgcolor: color,
+          mb: 3,
+          width: "fit-content",
+          maxWidth: "95%",
+          mx: "auto", // centrar en pantalla grande
+        }}
       >
-        {title}
-      </Typography>
-      <Grid container spacing={2} justifyContent="center">
-        {Array.from({ length: 5 }).map((_, idx) => {
-          const pokemon = team[idx];
-          return (
-            <Grid item xs={6} sm={4} md={2.4} key={idx}>
-              <Card
-                sx={{
-                  borderRadius: 3,
-                  boxShadow: 3,
-                  bgcolor: "white",
-                  textAlign: "center",
-                  height: 140,
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "center",
-                  transition: "all 0.2s ease",
-                  animation: animating ? "flash 0.3s linear infinite" : "none",
-                }}
-              >
-                {pokemon ? (
-                  <>
-                    <CardMedia
-                      component="img"
-                      image={pokemon.imageUrl}
-                      alt={pokemon.name}
-                      sx={{ height: 80, objectFit: "contain", p: 1 }}
-                    />
-                    <Typography variant="body2" sx={{ fontWeight: 600, p: 1 }}>
-                      {pokemon.name}
-                    </Typography>
-                  </>
-                ) : (
+        <Typography
+          variant={isMobile ? "subtitle1" : "h6"}
+          align="center"
+          fontWeight="bold"
+          sx={{ mb: 1.5, color: "white" }}
+        >
+          {title}
+        </Typography>
+
+        <Box
+          sx={{
+            display: "flex",
+            gap: 1,
+            overflowX: isMobile ? "auto" : "visible",
+            justifyContent: "center",
+            p: isMobile ? "0 4px" : 0,
+            width: totalWidth,
+          }}
+        >
+          {team.map((pokemon, idx) => (
+            <Card
+              key={idx}
+              sx={{
+                borderRadius: 2,
+                boxShadow: 2,
+                bgcolor: "white",
+                textAlign: "center",
+                minWidth: cardWidth,
+                height: isMobile ? 100 : isTablet ? 130 : 150,
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                flexShrink: 0,
+                animation: animating ? "flash 0.3s linear infinite" : "none",
+              }}
+            >
+              {pokemon ? (
+                <>
+                  <CardMedia
+                    component="img"
+                    image={pokemon.imageUrl}
+                    alt={pokemon.name}
+                    sx={{
+                      height: isMobile ? 40 : isTablet ? 60 : 80,
+                      objectFit: "contain",
+                      p: 0.5,
+                      m: "0 auto",
+                    }}
+                  />
                   <Typography
-                    variant="body2"
-                    sx={{ color: "gray", fontWeight: 500 }}
+                    variant={isMobile ? "caption" : "body2"}
+                    sx={{ fontWeight: 600 }}
+                    noWrap
                   >
-                    Empty
+                    {pokemon.name}
                   </Typography>
-                )}
-              </Card>
-            </Grid>
-          );
-        })}
-      </Grid>
-    </Paper>
-  );
+                </>
+              ) : (
+                <Typography
+                  variant="caption"
+                  sx={{ color: "gray", fontWeight: 500 }}
+                >
+                  Empty
+                </Typography>
+              )}
+            </Card>
+          ))}
+        </Box>
+      </Paper>
+    );
+  };
 
   return (
     <Box
-      p={3}
+      p={{ xs: 2, sm: 3 }}
       display="flex"
       flexDirection="column"
       alignItems="center"
       justifyContent="flex-start"
       minHeight="100vh"
-      marginTop={6}
       gap={2}
     >
       <Typography
-        variant="h4"
+        variant={isMobile ? "h6" : "h4"}
         gutterBottom
         fontWeight="bold"
         textAlign="center"
-        marginTop={5}
+        mb={3}
+        mt={10}
       >
-        🎲 Pokemon Unite Team Simulator 🎲
+        🎲 Pokémon Unite Team Simulator 🎲
       </Typography>
 
       {loading ? (
@@ -157,28 +177,33 @@ export default function PokemonSimulatorPage() {
           {renderTeam(teamAlly, "Allies", "#1976d2")}
           {renderTeam(teamEnemy, "Enemies", "#d32f2f")}
 
-          <IconButton
-            color="primary"
-            onClick={randomizeTeams}
-            disabled={animating}
+          <Box
             sx={{
-              mt: 2,
-              bgcolor: "white",
-              border: "2px solid #1976d2",
-              borderRadius: "50%",
-              p: 2,
-              animation: animating ? "spin 0.5s linear infinite" : "none",
-              "&:hover": {
-                bgcolor: "#f0f0f0",
-              },
+              display: "flex",
+              justifyContent: "center",
+              width: "100%",
+              mb: 2,
             }}
           >
-            <CasinoIcon fontSize="large" />
-          </IconButton>
+            <IconButton
+              color="primary"
+              onClick={randomizeTeams}
+              disabled={animating}
+              sx={{
+                bgcolor: "white",
+                border: `2px solid #1976d2`,
+                borderRadius: "50%",
+                p: isMobile ? 1.2 : 2,
+                animation: animating ? "spin 0.5s linear infinite" : "none",
+                "&:hover": { bgcolor: "#f0f0f0" },
+              }}
+            >
+              <CasinoIcon fontSize={isMobile ? "medium" : "large"} />
+            </IconButton>
+          </Box>
         </>
       )}
 
-      {/* Animaciones CSS */}
       <style>
         {`
           @keyframes spin {

@@ -34,18 +34,14 @@ interface Pokemon {
   role: string;
 }
 
-
-
 export default function PokemonCrud() {
   const [pokemons, setPokemons] = useState<Pokemon[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-
   const [openDialog, setOpenDialog] = useState(false);
   const [editingPokemon, setEditingPokemon] = useState<Pokemon | null>(null);
   const roleOptions = ["Attacker", "Speedster", "All-Rounder", "Supporter", "Defender"];
-
   const [form, setForm] = useState({ name: "", imageUrl: "", role: "" });
 
   useEffect(() => {
@@ -57,7 +53,7 @@ export default function PokemonCrud() {
       setLoading(true);
       const data = await getPokemons();
       setPokemons(data);
-    } catch (err) {
+    } catch {
       toast.error("Error loading Pokémons");
     } finally {
       setLoading(false);
@@ -92,7 +88,7 @@ export default function PokemonCrud() {
         toast.success("Pokémon created!");
       }
       handleCloseDialog();
-    } catch (err) {
+    } catch {
       toast.error("Error saving Pokémon");
     }
   };
@@ -103,31 +99,45 @@ export default function PokemonCrud() {
       await deletePokemon(id);
       setPokemons((prev) => prev.filter((p) => p.id !== id));
       toast.success("Pokémon deleted!");
-    } catch (err) {
+    } catch {
       toast.error("Error deleting Pokémon");
     }
   };
 
   return (
-    <Container sx={{ py: 4, maxWidth: "lg" }}>
+    <Container sx={{ py: { xs: 2, sm: 4 }, maxWidth: "lg" }}>
       <ToastContainer position="top-right" autoClose={3000} />
 
-      {/* 🔹 Header */}
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3} mt={5}>
-        <Typography variant="h4" fontWeight="bold" textAlign={"center"} flexGrow={1}>
+      {/* Header */}
+      <Box
+        display="flex"
+        flexDirection={{ xs: "column", sm: "row" }}
+        justifyContent="space-between"
+        alignItems={{ xs: "stretch", sm: "center" }}
+        gap={2}
+        mb={3}
+        mt={5}
+      >
+        <Typography variant="h4" fontWeight="bold" textAlign={{ xs: "center", sm: "left" }} flexGrow={1}>
           Pokemon Management
         </Typography>
-        <Button variant="contained" startIcon={<Add />} onClick={() => handleOpenDialog()}>
+        <Button
+          variant="contained"
+          startIcon={<Add />}
+          onClick={() => handleOpenDialog()}
+          sx={{ width: { xs: "100%", sm: "auto" } }}
+        >
           Add Pokemon
         </Button>
       </Box>
 
+      {/* Loading Spinner */}
       {loading ? (
         <Box sx={{ display: "flex", justifyContent: "center", mt: 8 }}>
           <CircularProgress size={60} thickness={4} />
         </Box>
       ) : (
-        <Paper sx={{ borderRadius: 3, boxShadow: 4 }}>
+        <Paper sx={{ borderRadius: 3, boxShadow: 4, overflowX: "auto" }}>
           <TableContainer>
             <Table>
               <TableHead>
@@ -147,7 +157,7 @@ export default function PokemonCrud() {
                     <TableCell>{pokemon.id}</TableCell>
                     <TableCell>{pokemon.name}</TableCell>
                     <TableCell>
-                      <img src={pokemon.imageUrl} alt={pokemon.name} style={{ width: 50, height: 50 }} />
+                      <img src={pokemon.imageUrl} alt={pokemon.name} style={{ width: 40, height: 40 }} />
                     </TableCell>
                     <TableCell>{pokemon.role}</TableCell>
                     <TableCell align="center">
@@ -190,10 +200,18 @@ export default function PokemonCrud() {
         </Paper>
       )}
 
-      {/* 🔹 Dialog for Create/Edit */}
+      {/* Dialog for Create/Edit */}
       <Dialog open={openDialog} onClose={handleCloseDialog} fullWidth maxWidth="sm">
         <DialogTitle>{editingPokemon ? "Edit Pokémon" : "Add Pokémon"}</DialogTitle>
-        <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, overflowY: "auto", maxHeight: "60vh" }}>
+        <DialogContent
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 2,
+            overflowY: "auto",
+            maxHeight: "60vh",
+          }}
+        >
           <TextField
             label="Name"
             value={form.name}
@@ -212,19 +230,21 @@ export default function PokemonCrud() {
             options={roleOptions}
             value={form.role}
             onChange={(_, newValue) => setForm({ ...form, role: newValue || "" })}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Role"
-                margin="dense"
-                fullWidth
-              />
-            )}
+            renderInput={(params) => <TextField {...params} label="Role" margin="dense" fullWidth />}
           />
         </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDialog}>Cancel</Button>
-          <Button variant="contained" onClick={handleSave}>
+        <DialogActions
+          sx={{
+            flexDirection: { xs: "column", sm: "row" },
+            gap: 1,
+            px: 3,
+            pb: 2,
+          }}
+        >
+          <Button fullWidth={true} onClick={handleCloseDialog}>
+            Cancel
+          </Button>
+          <Button variant="contained" fullWidth={true} onClick={handleSave}>
             {editingPokemon ? "Update" : "Create"}
           </Button>
         </DialogActions>

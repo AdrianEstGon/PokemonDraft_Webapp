@@ -5,7 +5,7 @@ import { getCounters } from "../services/CounterService";
 import { getUserPokemons } from "../services/BagService";
 
 type Team = "ALLY" | "ENEMY";
-type Phase = "BAN" | "PICK";
+type Phase = "ALLY_BANS" | "ENEMY_BANS" | "ASK_FIRST_PICK" | "PICK";
 type ClassFilter =
   | "ALL"
   | "Attacker"
@@ -14,11 +14,15 @@ type ClassFilter =
   | "All-Rounder"
   | "Speedster";
 
-// useDraftLogic.ts
-export function useDraftLogic(initialWhoStarts?: Team) {
-  const [whoStarts, setWhoStarts] = useState<Team | null>(initialWhoStarts ?? null);
-  const [phase, setPhase] = useState<Phase>("BAN");
+export function useDraftLogic() {
+  // whoStarts será null hasta que el usuario escoja quien hace el primer pick
+  const [whoStarts, setWhoStarts] = useState<Team | null>(null);
+
+  // fases: primero ally bans (3), luego enemy bans (3), luego ask first pick, luego picks
+  const [phase, setPhase] = useState<Phase>("ALLY_BANS");
+  // step para contar selections dentro de la fase actual (0..2 para bans, 0..n para picks)
   const [step, setStep] = useState(0);
+
   const [classFilter, setClassFilter] = useState<ClassFilter>("ALL");
   const [onlyMyPokemons, setOnlyMyPokemons] = useState(false);
 
@@ -52,66 +56,67 @@ export function useDraftLogic(initialWhoStarts?: Team) {
 
   const advisor = useMemo(() => new DraftAdvisor(counters), [counters]);
 
-  const banOrder: Team[] = whoStarts
-  ? [
-      whoStarts,
-      whoStarts === "ALLY" ? "ENEMY" : "ALLY",
-      whoStarts,
-      whoStarts === "ALLY" ? "ENEMY" : "ALLY",
-      whoStarts,
-      whoStarts === "ALLY" ? "ENEMY" : "ALLY",
-    ]
-  : [];
+  // pickOrder se calcula **cuando** whoStarts ya está definido
+  const pickOrder = useMemo(() => {
+    if (!whoStarts) return [];
+    const other: Team = whoStarts === "ALLY" ? "ENEMY" : "ALLY";
+    return [
+      whoStarts, // 1
+      other, // 2
+      other, // 3
+      whoStarts, // 4
+      whoStarts, // 5
+      other, // 6
+      other, // 7
+      whoStarts, // 8
+      whoStarts, // 9
+      other, // 10
+    ];
+  }, [whoStarts]);
 
+  // currentTeam depende de la fase:
+  // - ALly bans => ALWAYS ALly until 3 bans
+  // - ENEMY_BANS => ALWAYS ENEMY until 3 bans
+  // - ASK_FIRST_PICK => null (no selection)
+  // - PICK => pickOrder[step]
+  const currentTeam: Team | null = useMemo(() => {
+    if (phase === "ALLY_BANS") return "ALLY";
+    if (phase === "ENEMY_BANS") return "ENEMY";
+    if (phase === "ASK_FIRST_PICK") return null;
+    if (phase === "PICK") return pickOrder[step] ?? null;
+    return null;
+  }, [phase, step, pickOrder]);
 
-  const pickOrder: Team[] = whoStarts
-    ? [
-        whoStarts,
-        whoStarts === "ALLY" ? "ENEMY" : "ALLY",
-        whoStarts === "ALLY" ? "ENEMY" : "ALLY",
-        whoStarts,
-        whoStarts,
-        whoStarts === "ALLY" ? "ENEMY" : "ALLY",
-        whoStarts === "ALLY" ? "ENEMY" : "ALLY",
-        whoStarts,
-        whoStarts,
-        whoStarts === "ALLY" ? "ENEMY" : "ALLY",
-      ]
-    : [];
+  // totalSteps para la fase actual (usado internamente)
+  const totalSteps = useMemo(() => {
+    if (phase === "ALLY_BANS" || phase === "ENEMY_BANS") return 3;
+    if (phase === "PICK") return pickOrder.length;
+    return 0;
+  }, [phase, pickOrder]);
 
-  // 🔹 Nunca null si whoStarts está definido
-  const currentTeam: Team | null = whoStarts
-    ? phase === "BAN"
-      ? banOrder[step]
-      : pickOrder[step]
-    : null;
+  // En available, excluir bans solamente durante PICK (durante bans queremos ver todo para banear)
+  const available = useMemo(() => {
+    const bannedForPick = [...allyBans, ...enemyBans].map((x) => x.name);
 
-  const totalSteps = phase === "BAN" ? banOrder.length : pickOrder.length;
+    return allPokemons.filter((p) => {
+      const alreadyPicked = [...allyPicks, ...enemyPicks].some((x) => x.name === p.name);
+      const banned = phase === "PICK" ? bannedForPick.includes(p.name) : false;
+      const classOk = classFilter === "ALL" || p.role === classFilter;
+      const myPokemonOk = !onlyMyPokemons || userPokemons.includes(p.name);
 
-// En available, solo excluir bans durante PICK
-const available = useMemo(() => {
-  const bannedForPick = [...allyBans, ...enemyBans].map((x) => x.name);
-
-  return allPokemons.filter((p) => {
-    const alreadyPicked = [...allyPicks, ...enemyPicks].some((x) => x.name === p.name);
-    const banned = phase === "PICK" ? bannedForPick.includes(p.name) : false; // 🔹 Solo excluir bans en PICK
-    const classOk = classFilter === "ALL" || p.role === classFilter;
-    const myPokemonOk = !onlyMyPokemons || userPokemons.includes(p.name);
-
-    return !alreadyPicked && !banned && classOk && myPokemonOk;
-  });
-}, [
-  allPokemons,
-  allyBans,
-  enemyBans,
-  allyPicks,
-  enemyPicks,
-  classFilter,
-  onlyMyPokemons,
-  userPokemons,
-  phase, // 🔹 importante incluir phase para que se recalcule al cambiar
-]);
-
+      return !alreadyPicked && !banned && classOk && myPokemonOk;
+    });
+  }, [
+    allPokemons,
+    allyBans,
+    enemyBans,
+    allyPicks,
+    enemyPicks,
+    classFilter,
+    onlyMyPokemons,
+    userPokemons,
+    phase,
+  ]);
 
   const filteredAvailable = useMemo(() => {
     return available.filter((p) =>
@@ -120,6 +125,7 @@ const available = useMemo(() => {
   }, [available, searchText]);
 
   const recommendations = useMemo(() => {
+    // Mantenemos la lógica anterior: solo recomendar cuando sea turno ALLY en PICK
     if (phase === "PICK" && currentTeam === "ALLY") {
       return advisor.recommend(
         enemyPicks.map((p) => p.name),
@@ -137,30 +143,68 @@ const available = useMemo(() => {
     );
   }, [filteredAvailable, recommendations]);
 
+  // Manejo de selección (ban o pick) según la fase actual
   const handleSelect = (pokemon: any) => {
-    if (!currentTeam) return;
+    if (phase === "ALLY_BANS") {
+      setAllyBans((prev) => [...prev, pokemon]);
 
-    if (phase === "BAN") {
-      currentTeam === "ALLY"
-        ? setAllyBans((prev) => [...prev, pokemon])
-        : setEnemyBans((prev) => [...prev, pokemon]);
-    } else {
-      currentTeam === "ALLY"
-        ? setAllyPicks((prev) => [...prev, pokemon])
-        : setEnemyPicks((prev) => [...prev, pokemon]);
+      // avanza step; cuando llegue a 3 pasa a ENEMY_BANS
+      if (step + 1 < 3) {
+        setStep((s) => s + 1);
+      } else {
+        // terminado ally bans
+        setPhase("ENEMY_BANS");
+        setStep(0);
+      }
+      return;
     }
 
-    if (step + 1 < totalSteps) {
-      setStep(step + 1);
-    } else if (phase === "BAN") {
-      setPhase("PICK");
-      setStep(0);
+    if (phase === "ENEMY_BANS") {
+      setEnemyBans((prev) => [...prev, pokemon]);
+
+      if (step + 1 < 3) {
+        setStep((s) => s + 1);
+      } else {
+        // terminado enemy bans → pedir primer pick
+        setPhase("ASK_FIRST_PICK");
+        setStep(0);
+      }
+      return;
+    }
+
+    // Si estamos en PICK, usamos pickOrder y añadimos picks según turn
+    if (phase === "PICK") {
+      const team = currentTeam;
+      if (!team) return;
+
+      if (team === "ALLY") {
+        setAllyPicks((prev) => [...prev, pokemon]);
+      } else {
+        setEnemyPicks((prev) => [...prev, pokemon]);
+      }
+
+      // avanzar step dentro de picks
+      if (step + 1 < totalSteps) {
+        setStep((s) => s + 1);
+      } else {
+        // draft completado; podrías cambiar a una fase final si quisieras
+        // por ahora no hacemos nada extra
+      }
+      return;
     }
   };
 
+  // Cuando el usuario elige whoStarts (primer pick), se fija whoStarts y entramos en PICK
+  const commitFirstPick = (team: Team) => {
+    setWhoStarts(team);
+    setPhase("PICK");
+    setStep(0);
+  };
+
+  // reset completo
   const reset = () => {
     setWhoStarts(null);
-    setPhase("BAN");
+    setPhase("ALLY_BANS");
     setStep(0);
     setAllyBans([]);
     setEnemyBans([]);
@@ -174,7 +218,7 @@ const available = useMemo(() => {
   return {
     loading,
     whoStarts,
-    setWhoStarts,
+    setWhoStarts: commitFirstPick, // exportamos la función que fija primer pick y arranca picks
     phase,
     step,
     classFilter,
