@@ -1,8 +1,9 @@
 import { Box, Button, Typography, FormControl, InputLabel, Select, MenuItem, Autocomplete, TextField, Checkbox, FormControlLabel } from "@mui/material";
 import type { Dispatch, SetStateAction } from "react";
+import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
 
 type ClassFilter = "ALL" | "Attacker" | "Defender" | "Supporter" | "All-Rounder" | "Speedster";
-
 type Phase = "ALLY_BANS" | "ENEMY_BANS" | "ASK_FIRST_PICK" | "PICK";
 
 interface DraftAvailableProps {
@@ -17,6 +18,7 @@ interface DraftAvailableProps {
   setSearchText: Dispatch<SetStateAction<string>>;
   onlyMyPokemons: boolean;
   setOnlyMyPokemons: Dispatch<SetStateAction<boolean>>;
+  loading: boolean;
 }
 
 export default function DraftAvailable({
@@ -31,11 +33,47 @@ export default function DraftAvailable({
   setSearchText,
   onlyMyPokemons,
   setOnlyMyPokemons,
+  loading,
 }: DraftAvailableProps) {
+  const [showLoading, setShowLoading] = useState(true);
+
+  // 👇 Controlamos que el spinner se muestre al menos 3s
+  useEffect(() => {
+    if (!loading) {
+      const timer = setTimeout(() => setShowLoading(false), 2000); // mínimo 3s
+      return () => clearTimeout(timer);
+    } else {
+      setShowLoading(true); // si vuelve a cargar, mostramos otra vez
+    }
+  }, [loading]);
 
   const getScore = (name: string) =>
     recommendations.find((r) => r.pokemon === name)?.score ?? 0;
 
+  if (showLoading) {
+    // 👇 Pokéball gigante girando
+    return (
+      <Box
+        sx={{
+          flex: 1,
+          height: "60vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <motion.img
+          src="/pokeball.png" // ⚠️ coloca una pokeball en public/
+          alt="Loading Pokémons..."
+          animate={{ rotate: 360 }}
+          transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
+          style={{ width: "min(60vw, 200px)", height: "auto" }}
+        />
+      </Box>
+    );
+  }
+
+  // 👇 Render normal cuando ya cargó
   return (
     <>
       <Box sx={{ mb: 1, width: "100%", display: "flex", flexDirection: { xs: "column", sm: "row" }, gap: 1 }}>
@@ -105,7 +143,6 @@ export default function DraftAvailable({
               style={{ width: "70%", height: "70%", objectFit: "contain" }}
             />
 
-            {/* Score badge solo si es turno de PICK y equipo ALLY */}
             {phase === "PICK" && currentTeam === "ALLY" && (
               <Box
                 sx={{
