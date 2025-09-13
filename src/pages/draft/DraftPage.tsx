@@ -38,6 +38,7 @@ export default function DraftPage() {
     onlyMyPokemons,
     setOnlyMyPokemons,
     setWhoStarts,
+    loading,
   } = useDraftLogic();
 
   const [openFirstPickDialog, setOpenFirstPickDialog] = useState(false);
@@ -140,7 +141,7 @@ export default function DraftPage() {
                 setSearchText={setSearchText}
                 onlyMyPokemons={onlyMyPokemons}
                 setOnlyMyPokemons={setOnlyMyPokemons} 
-                loading={false}              />
+                loading={loading}              />
             </Paper>
           </Grid>
         </Grid>
