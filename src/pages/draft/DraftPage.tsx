@@ -139,8 +139,8 @@ export default function DraftPage() {
                 searchText={searchText}
                 setSearchText={setSearchText}
                 onlyMyPokemons={onlyMyPokemons}
-                setOnlyMyPokemons={setOnlyMyPokemons}
-              />
+                setOnlyMyPokemons={setOnlyMyPokemons} 
+                loading={false}              />
             </Paper>
           </Grid>
         </Grid>
