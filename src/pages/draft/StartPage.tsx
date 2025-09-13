@@ -99,31 +99,38 @@ export default function StartPage() {
             }}
           />
 
-         {/* Superball con 2 rayas verticales */}
-        {ballType === "superball" && (
-          <>
-            <Box
-              sx={{
-                position: "absolute",
-                top: 0,
-                left: "15%",   // 🔥 Más hacia la izquierda
-                width: "12%",  // un poco más delgadas
-                height: "50%",
-                background: "#ff0800ff",
-              }}
-            />
-            <Box
-              sx={{
-                position: "absolute",
-                top: 0,
-                right: "15%",  // 🔥 Más hacia la derecha
-                width: "12%",  // un poco más delgadas
-                height: "50%",
-                background: "#ff0800ff",
-              }}
-            />
-          </>
-        )}
+{/* Superball */}
+{ballType === "superball" && (
+  <>
+    {/* Ala izquierda */}
+    <Box
+      sx={{
+        position: "absolute",
+        top: "8%",
+        left: "12%",
+        width: "25%",
+        height: "18%",
+        background: "red",
+        clipPath: "polygon(0 0, 100% 0, 75% 100%, 0 100%)", // diagonal
+        border: "2px solid black",
+      }}
+    />
+    {/* Ala derecha */}
+    <Box
+      sx={{
+        position: "absolute",
+        top: "8%",
+        right: "12%",
+        width: "25%",
+        height: "18%",
+        background: "red",
+        clipPath: "polygon(0 0, 100% 0, 100% 100%, 25% 100%)", // diagonal opuesta
+        border: "2px solid black",
+      }}
+    />
+  </>
+)}
+
 
           
 
