@@ -51,7 +51,7 @@ export default function NavBar({ role }: NavBarProps) {
   const adminItems = role === "admin"
     ? [
         { title: "Settings", icon: <SettingsIcon />, path: "/settings" },
-        { title: "Pokémons", icon: <CatchingPokemonIcon />, path: "/pokemons" },
+        { title: "Pokemons", icon: <CatchingPokemonIcon />, path: "/pokemons" },
         { title: "Users", icon: <PeopleIcon />, path: "/users" },
       ]
     : [];
