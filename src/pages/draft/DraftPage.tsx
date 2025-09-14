@@ -12,6 +12,7 @@ import {
   Button,
 } from "@mui/material";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
+import UndoIcon from "@mui/icons-material/Undo";
 import DraftHeader from "./components/DraftHeader";
 import DraftBans from "./components/DraftBans";
 import DraftPicks from "./components/DraftPicks";
@@ -39,6 +40,7 @@ export default function DraftPage() {
     setOnlyMyPokemons,
     setWhoStarts,
     loading,
+    undo,
   } = useDraftLogic();
 
   const [openFirstPickDialog, setOpenFirstPickDialog] = useState(false);
@@ -145,6 +147,23 @@ export default function DraftPage() {
             </Paper>
           </Grid>
         </Grid>
+
+        <Tooltip title="Undo last action">
+  <Fab
+    color="primary"
+    onClick={undo}
+    sx={{
+      position: "fixed",
+      bottom: { xs: 80, sm: 24 }, // para no solaparse con Restart
+      left: { xs: "50%", sm: 90 },
+      transform: { xs: "translateX(-50%)", sm: "none" },
+      zIndex: 1000,
+    }}
+  >
+    <UndoIcon />
+  </Fab>
+</Tooltip>
+
 
         {/* Restart FAB */}
         <Tooltip title="Restart draft">

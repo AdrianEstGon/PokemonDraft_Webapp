@@ -14,13 +14,19 @@ type ClassFilter =
   | "All-Rounder"
   | "Speedster";
 
-export function useDraftLogic() {
-  // whoStarts será null hasta que el usuario escoja quien hace el primer pick
-  const [whoStarts, setWhoStarts] = useState<Team | null>(null);
+type DraftState = {
+  phase: Phase;
+  step: number;
+  whoStarts: Team | null;
+  allyBans: any[];
+  enemyBans: any[];
+  allyPicks: any[];
+  enemyPicks: any[];
+};
 
-  // fases: primero ally bans (3), luego enemy bans (3), luego ask first pick, luego picks
+export function useDraftLogic() {
+  const [whoStarts, setWhoStarts] = useState<Team | null>(null);
   const [phase, setPhase] = useState<Phase>("ALLY_BANS");
-  // step para contar selections dentro de la fase actual (0..2 para bans, 0..n para picks)
   const [step, setStep] = useState(0);
 
   const [classFilter, setClassFilter] = useState<ClassFilter>("ALL");
@@ -36,7 +42,25 @@ export function useDraftLogic() {
   const [counters, setCounters] = useState<Counter[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const [, setHistory] = useState<DraftState[]>([]);
+
   const userId = localStorage.getItem("userId");
+
+  // Guarda snapshot del estado actual en history
+  const saveSnapshot = () => {
+    setHistory((prev) => [
+      ...prev,
+      {
+        phase,
+        step,
+        whoStarts,
+        allyBans,
+        enemyBans,
+        allyPicks,
+        enemyPicks,
+      },
+    ]);
+  };
 
   // Cargar pokemons y counters
   useEffect(() => {
@@ -56,7 +80,6 @@ export function useDraftLogic() {
 
   const advisor = useMemo(() => new DraftAdvisor(counters), [counters]);
 
-  // pickOrder se calcula **cuando** whoStarts ya está definido
   const pickOrder = useMemo(() => {
     if (!whoStarts) return [];
     const other: Team = whoStarts === "ALLY" ? "ENEMY" : "ALLY";
@@ -74,11 +97,6 @@ export function useDraftLogic() {
     ];
   }, [whoStarts]);
 
-  // currentTeam depende de la fase:
-  // - ALly bans => ALWAYS ALly until 3 bans
-  // - ENEMY_BANS => ALWAYS ENEMY until 3 bans
-  // - ASK_FIRST_PICK => null (no selection)
-  // - PICK => pickOrder[step]
   const currentTeam: Team | null = useMemo(() => {
     if (phase === "ALLY_BANS") return "ALLY";
     if (phase === "ENEMY_BANS") return "ENEMY";
@@ -87,19 +105,19 @@ export function useDraftLogic() {
     return null;
   }, [phase, step, pickOrder]);
 
-  // totalSteps para la fase actual (usado internamente)
   const totalSteps = useMemo(() => {
     if (phase === "ALLY_BANS" || phase === "ENEMY_BANS") return 3;
     if (phase === "PICK") return pickOrder.length;
     return 0;
   }, [phase, pickOrder]);
 
-  // En available, excluir bans solamente durante PICK (durante bans queremos ver todo para banear)
   const available = useMemo(() => {
     const bannedForPick = [...allyBans, ...enemyBans].map((x) => x.name);
 
     return allPokemons.filter((p) => {
-      const alreadyPicked = [...allyPicks, ...enemyPicks].some((x) => x.name === p.name);
+      const alreadyPicked = [...allyPicks, ...enemyPicks].some(
+        (x) => x.name === p.name
+      );
       const banned = phase === "PICK" ? bannedForPick.includes(p.name) : false;
       const classOk = classFilter === "ALL" || p.role === classFilter;
       const myPokemonOk = !onlyMyPokemons || userPokemons.includes(p.name);
@@ -125,7 +143,6 @@ export function useDraftLogic() {
   }, [available, searchText]);
 
   const recommendations = useMemo(() => {
-    // Mantenemos la lógica anterior: solo recomendar cuando sea turno ALLY en PICK
     if (phase === "PICK" && currentTeam === "ALLY") {
       return advisor.recommend(
         enemyPicks.map((p) => p.name),
@@ -143,16 +160,15 @@ export function useDraftLogic() {
     );
   }, [filteredAvailable, recommendations]);
 
-  // Manejo de selección (ban o pick) según la fase actual
+  // Manejo de selección (ban o pick)
   const handleSelect = (pokemon: any) => {
+    saveSnapshot(); // Guardar estado antes de modificar nada
+
     if (phase === "ALLY_BANS") {
       setAllyBans((prev) => [...prev, pokemon]);
-
-      // avanza step; cuando llegue a 3 pasa a ENEMY_BANS
       if (step + 1 < 3) {
         setStep((s) => s + 1);
       } else {
-        // terminado ally bans
         setPhase("ENEMY_BANS");
         setStep(0);
       }
@@ -161,18 +177,15 @@ export function useDraftLogic() {
 
     if (phase === "ENEMY_BANS") {
       setEnemyBans((prev) => [...prev, pokemon]);
-
       if (step + 1 < 3) {
         setStep((s) => s + 1);
       } else {
-        // terminado enemy bans → pedir primer pick
         setPhase("ASK_FIRST_PICK");
         setStep(0);
       }
       return;
     }
 
-    // Si estamos en PICK, usamos pickOrder y añadimos picks según turn
     if (phase === "PICK") {
       const team = currentTeam;
       if (!team) return;
@@ -183,25 +196,38 @@ export function useDraftLogic() {
         setEnemyPicks((prev) => [...prev, pokemon]);
       }
 
-      // avanzar step dentro de picks
       if (step + 1 < totalSteps) {
         setStep((s) => s + 1);
-      } else {
-        // draft completado; podrías cambiar a una fase final si quisieras
-        // por ahora no hacemos nada extra
       }
       return;
     }
   };
 
-  // Cuando el usuario elige whoStarts (primer pick), se fija whoStarts y entramos en PICK
+  const undo = () => {
+    setHistory((prev) => {
+      if (prev.length === 0) return prev;
+
+      const last = prev[prev.length - 1];
+
+      setPhase(last.phase);
+      setStep(last.step);
+      setWhoStarts(last.whoStarts);
+      setAllyBans(last.allyBans);
+      setEnemyBans(last.enemyBans);
+      setAllyPicks(last.allyPicks);
+      setEnemyPicks(last.enemyPicks);
+
+      return prev.slice(0, -1);
+    });
+  };
+
   const commitFirstPick = (team: Team) => {
+    saveSnapshot();
     setWhoStarts(team);
     setPhase("PICK");
     setStep(0);
   };
 
-  // reset completo
   const reset = () => {
     setWhoStarts(null);
     setPhase("ALLY_BANS");
@@ -213,12 +239,13 @@ export function useDraftLogic() {
     setClassFilter("ALL");
     setOnlyMyPokemons(false);
     setSearchText("");
+    setHistory([]);
   };
 
   return {
     loading,
     whoStarts,
-    setWhoStarts: commitFirstPick, // exportamos la función que fija primer pick y arranca picks
+    setWhoStarts: commitFirstPick,
     phase,
     step,
     classFilter,
@@ -237,5 +264,6 @@ export function useDraftLogic() {
     currentTeam,
     handleSelect,
     reset,
+    undo,
   };
 }

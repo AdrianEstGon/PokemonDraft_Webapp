@@ -167,7 +167,7 @@ export default function PokemonSimulatorPage() {
         mb={3}
         mt={10}
       >
-        🎲 Pokémon Unite Team Simulator 🎲
+        🎲 Pokemon Unite Team Simulator 🎲
       </Typography>
 
       {loading ? (
