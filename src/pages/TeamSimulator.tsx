@@ -17,6 +17,7 @@ interface Pokemon {
   name: string;
   imageUrl: string;
   role: string;
+  tier?: string;
 }
 
 export default function PokemonSimulatorPage() {

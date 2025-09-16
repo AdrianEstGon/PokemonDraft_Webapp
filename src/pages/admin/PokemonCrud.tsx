@@ -32,6 +32,7 @@ interface Pokemon {
   name: string;
   imageUrl: string;
   role: string;
+  tier?: string | null;
 }
 
 export default function PokemonCrud() {
@@ -41,8 +42,10 @@ export default function PokemonCrud() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [openDialog, setOpenDialog] = useState(false);
   const [editingPokemon, setEditingPokemon] = useState<Pokemon | null>(null);
+
   const roleOptions = ["Attacker", "Speedster", "All-Rounder", "Supporter", "Defender"];
-  const [form, setForm] = useState({ name: "", imageUrl: "", role: "" });
+
+  const [form, setForm] = useState({ name: "", imageUrl: "", role: "", tier: "" });
 
   useEffect(() => {
     fetchPokemons();
@@ -63,10 +66,15 @@ export default function PokemonCrud() {
   const handleOpenDialog = (pokemon?: Pokemon) => {
     if (pokemon) {
       setEditingPokemon(pokemon);
-      setForm({ name: pokemon.name, imageUrl: pokemon.imageUrl, role: pokemon.role });
+      setForm({
+        name: pokemon.name,
+        imageUrl: pokemon.imageUrl,
+        role: pokemon.role,
+        tier: pokemon.tier || "",
+      });
     } else {
       setEditingPokemon(null);
-      setForm({ name: "", imageUrl: "", role: "" });
+      setForm({ name: "", imageUrl: "", role: "", tier: "" });
     }
     setOpenDialog(true);
   };
@@ -80,7 +88,9 @@ export default function PokemonCrud() {
     try {
       if (editingPokemon) {
         const updated = await updatePokemon(editingPokemon.id, form);
-        setPokemons((prev) => prev.map((p) => (p.id === editingPokemon.id ? updated : p)));
+        setPokemons((prev) =>
+          prev.map((p) => (p.id === editingPokemon.id ? updated : p))
+        );
         toast.success("Pokémon updated!");
       } else {
         const created = await createPokemon(form);
@@ -88,7 +98,8 @@ export default function PokemonCrud() {
         toast.success("Pokémon created!");
       }
       handleCloseDialog();
-    } catch {
+    } catch (err) {
+      console.error(err);
       toast.error("Error saving Pokémon");
     }
   };
@@ -118,7 +129,12 @@ export default function PokemonCrud() {
         mb={3}
         mt={5}
       >
-        <Typography variant="h4" fontWeight="bold" textAlign={{ xs: "center", sm: "left" }} flexGrow={1}>
+        <Typography
+          variant="h4"
+          fontWeight="bold"
+          textAlign={{ xs: "center", sm: "left" }}
+          flexGrow={1}
+        >
           Pokemon Management
         </Typography>
         <Button
@@ -146,37 +162,45 @@ export default function PokemonCrud() {
                   <TableCell sx={{ color: "white", fontWeight: "bold" }}>Name</TableCell>
                   <TableCell sx={{ color: "white", fontWeight: "bold" }}>Image</TableCell>
                   <TableCell sx={{ color: "white", fontWeight: "bold" }}>Role</TableCell>
+                  <TableCell sx={{ color: "white", fontWeight: "bold" }}>Tier</TableCell>
                   <TableCell sx={{ color: "white", fontWeight: "bold" }} align="center">
                     Actions
                   </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {pokemons.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((pokemon) => (
-                  <TableRow key={pokemon.id} hover>
-                    <TableCell>{pokemon.id}</TableCell>
-                    <TableCell>{pokemon.name}</TableCell>
-                    <TableCell>
-                      <img src={pokemon.imageUrl} alt={pokemon.name} style={{ width: 40, height: 40 }} />
-                    </TableCell>
-                    <TableCell>{pokemon.role}</TableCell>
-                    <TableCell align="center">
-                      <Tooltip title="Edit">
-                        <IconButton color="primary" onClick={() => handleOpenDialog(pokemon)}>
-                          <Edit />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Delete">
-                        <IconButton color="error" onClick={() => handleDelete(pokemon.id)}>
-                          <Delete />
-                        </IconButton>
-                      </Tooltip>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {pokemons
+                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                  .map((pokemon) => (
+                    <TableRow key={pokemon.id} hover>
+                      <TableCell>{pokemon.id}</TableCell>
+                      <TableCell>{pokemon.name}</TableCell>
+                      <TableCell>
+                        <img
+                          src={pokemon.imageUrl}
+                          alt={pokemon.name}
+                          style={{ width: 40, height: 40 }}
+                        />
+                      </TableCell>
+                      <TableCell>{pokemon.role}</TableCell>
+                      <TableCell>{pokemon.tier || "None"}</TableCell>
+                      <TableCell align="center">
+                        <Tooltip title="Edit">
+                          <IconButton color="primary" onClick={() => handleOpenDialog(pokemon)}>
+                            <Edit />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Delete">
+                          <IconButton color="error" onClick={() => handleDelete(pokemon.id)}>
+                            <Delete />
+                          </IconButton>
+                        </Tooltip>
+                      </TableCell>
+                    </TableRow>
+                  ))}
                 {!loading && pokemons.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={5} align="center">
+                    <TableCell colSpan={6} align="center">
                       No Pokemon found.
                     </TableCell>
                   </TableRow>
@@ -232,6 +256,12 @@ export default function PokemonCrud() {
             onChange={(_, newValue) => setForm({ ...form, role: newValue || "" })}
             renderInput={(params) => <TextField {...params} label="Role" margin="dense" fullWidth />}
           />
+          <Autocomplete
+            options={["S","A","B","C","D"]}
+            value={form.tier || ""}
+            onChange={(_, newValue) => setForm({ ...form, tier: newValue || "" })}
+            renderInput={(params) => <TextField {...params} label="Tier" margin="dense" fullWidth />}
+          />
         </DialogContent>
         <DialogActions
           sx={{
@@ -241,10 +271,10 @@ export default function PokemonCrud() {
             pb: 2,
           }}
         >
-          <Button fullWidth={true} onClick={handleCloseDialog}>
+          <Button fullWidth onClick={handleCloseDialog}>
             Cancel
           </Button>
-          <Button variant="contained" fullWidth={true} onClick={handleSave}>
+          <Button variant="contained" fullWidth onClick={handleSave}>
             {editingPokemon ? "Update" : "Create"}
           </Button>
         </DialogActions>

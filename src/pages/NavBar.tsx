@@ -17,7 +17,8 @@ import BackpackIcon from "@mui/icons-material/Backpack";
 import LogoutIcon from "@mui/icons-material/Logout";
 import HomeIcon from "@mui/icons-material/Home";
 import MenuIcon from "@mui/icons-material/Menu";
-import CasinoIcon from "@mui/icons-material/Casino"; // 🎲 simulador
+import CasinoIcon from "@mui/icons-material/Casino"; 
+import LeaderboardIcon from "@mui/icons-material/Leaderboard"; // 🏆 Tier list
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
@@ -40,7 +41,7 @@ export default function NavBar({ role }: NavBarProps) {
     } else {
       navigate(path);
     }
-    setAnchorEl(null); // cerrar menú si estaba abierto
+    setAnchorEl(null);
   };
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
@@ -56,11 +57,12 @@ export default function NavBar({ role }: NavBarProps) {
       ]
     : [];
 
-  // Botones usuarios normales / comunes
+  // Botones usuarios comunes
   const userItems = [
     { title: "Home", icon: <HomeIcon />, path: "/app" },
     { title: "Simulator", icon: <CasinoIcon />, path: "/simulator" },
     { title: "Bag", icon: <BackpackIcon />, path: "/bag" },
+    { title: "Tier List", icon: <LeaderboardIcon />, path: "/tierlist" }, // 👈 nuevo
   ];
 
   const logoutItem = { title: "Logout", icon: <LogoutIcon />, path: "logout" };

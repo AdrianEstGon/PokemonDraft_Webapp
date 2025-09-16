@@ -4,6 +4,7 @@ type Pokemon = {
   name: string;
   imageUrl: string;
   role: "Attacker" | "Defender" | "Supporter" | "All-Rounder" | "Speedster" | string;
+  tier?: string;
 };
 
 function getClassColor(role?: string) {

@@ -24,6 +24,7 @@ interface Pokemon {
   name: string;
   imageUrl: string;
   role: string;
+  tier?: string;
 }
 
 interface UserBagPageProps {

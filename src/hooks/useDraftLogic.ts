@@ -143,14 +143,38 @@ export function useDraftLogic() {
   }, [available, searchText]);
 
   const recommendations = useMemo(() => {
-    if (phase === "PICK" && currentTeam === "ALLY") {
-      return advisor.recommend(
-        enemyPicks.map((p) => p.name),
-        filteredAvailable.map((p) => p.name)
-      );
+  const baseRecs =
+    phase === "PICK" && currentTeam === "ALLY"
+      ? advisor.recommend(
+          enemyPicks.map((p) => p.name),
+          filteredAvailable.map((p) => p.name)
+        )
+      : filteredAvailable.map((p) => ({ pokemon: p.name, score: 0 }));
+
+  return baseRecs.map((rec) => {
+    const pokemon = allPokemons.find((p) => p.name === rec.pokemon);
+    if (!pokemon) return rec;
+
+    let tierBonus = 0;
+    switch (pokemon.tier) {
+      case "S":
+        tierBonus = 3;
+        break;
+      case "A":
+        tierBonus = 1;
+        break;
+      case "B":
+        tierBonus = -1;
+        break;
+      case "C":
+        tierBonus = -3;
+        break;
     }
-    return filteredAvailable.map((p) => ({ pokemon: p.name, score: 0 }));
-  }, [phase, step, enemyPicks, filteredAvailable, advisor, currentTeam]);
+
+    return { ...rec, score: rec.score + tierBonus };
+  });
+}, [phase, step, enemyPicks, filteredAvailable, advisor, currentTeam, allPokemons]);
+
 
   const sortedAvailable = useMemo(() => {
     return [...filteredAvailable].sort(

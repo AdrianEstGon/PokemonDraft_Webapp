@@ -8,7 +8,8 @@ import DraftPage from "../pages/draft/DraftPage";
 import PrivateRoute from "./PrivateRoute";
 import StartPage from "../pages/draft/StartPage";
 import NavBar from "../pages/NavBar";
-import SimulatorPage from "../pages/TeamSimulator"; // 👈 importa el simulador
+import SimulatorPage from "../pages/TeamSimulator"; 
+import PokemonTierListPage from "../pages/Tierlist"; // 👈 importa la nueva página
 
 function LayoutWithNav({ children }: { children: React.ReactNode }) {
   const role = localStorage.getItem("role");
@@ -94,7 +95,18 @@ export default function AppRouter() {
           element={
             <PrivateRoute>
               <LayoutWithNav>
-                <SimulatorPage/>
+                <SimulatorPage />
+              </LayoutWithNav>
+            </PrivateRoute>
+          }
+        />
+        {/* 🔹 Nuevo: Tier List */}
+        <Route
+          path="/tierlist"
+          element={
+            <PrivateRoute>
+              <LayoutWithNav>
+                <PokemonTierListPage />
               </LayoutWithNav>
             </PrivateRoute>
           }
