@@ -54,6 +54,7 @@ export default function NavBar({ role }: NavBarProps) {
         { title: "Settings", icon: <SettingsIcon />, path: "/settings" },
         { title: "Pokemons", icon: <CatchingPokemonIcon />, path: "/pokemons" },
         { title: "Users", icon: <PeopleIcon />, path: "/users" },
+        { title: "Tier List", icon: <LeaderboardIcon />, path: "/tierlist" }, // 👈 nuevo
       ]
     : [];
 
@@ -62,7 +63,6 @@ export default function NavBar({ role }: NavBarProps) {
     { title: "Home", icon: <HomeIcon />, path: "/app" },
     { title: "Simulator", icon: <CasinoIcon />, path: "/simulator" },
     { title: "Bag", icon: <BackpackIcon />, path: "/bag" },
-    { title: "Tier List", icon: <LeaderboardIcon />, path: "/tierlist" }, // 👈 nuevo
   ];
 
   const logoutItem = { title: "Logout", icon: <LogoutIcon />, path: "logout" };
