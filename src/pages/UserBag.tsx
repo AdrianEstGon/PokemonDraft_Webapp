@@ -28,7 +28,7 @@ interface Pokemon {
 }
 
 interface UserBagPageProps {
-  userId: number;
+  userId: number | null | undefined;
 }
 
 const UserBagPage = ({ userId }: UserBagPageProps) => {
@@ -36,13 +36,13 @@ const UserBagPage = ({ userId }: UserBagPageProps) => {
   const [userPokemons, setUserPokemons] = useState<number[]>([]);
   const [selected, setSelected] = useState<number[]>([]);
   const [loadingData, setLoadingData] = useState(true);
-  const [showLoading, setShowLoading] = useState(true); // 👈 controla el mínimo de 2s
+  const [showLoading, setShowLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [search] = useState("");
 
   const roleOrder = ["Attacker", "All-Rounder", "Speedster", "Defender", "Supporter"];
 
-  // 🔹 Función de ordenamiento por selección + rol
+  // 🔹 Ordena primero seleccionados, luego por rol
   const sortPokemons = (pokemons: Pokemon[], selectedIds: number[]) => {
     return [...pokemons].sort((a, b) => {
       const aSelected = selectedIds.includes(a.id) ? 0 : 1;
@@ -76,25 +76,37 @@ const UserBagPage = ({ userId }: UserBagPageProps) => {
   // 🔹 Cargar datos iniciales
   useEffect(() => {
     const fetchData = async () => {
+      if (!userId) {
+        console.error("❌ No userId provided to UserBagPage");
+        toast.error("No user found, please log in again.");
+        setLoadingData(false);
+        return;
+      }
+
       setLoadingData(true);
+      try {
+        const pokemons = await getPokemons();
+        const userBag = await getUserPokemons(userId);
 
-      const pokemons = await getPokemons();
-      const userBag = await getUserPokemons(userId);
-      const userPokemonIds = userBag.map((p: any) => p.pokemonId);
+        const userPokemonIds = userBag.map((p: any) => p.pokemonId);
 
-      setUserPokemons(userPokemonIds);
-      setSelected(userPokemonIds);
+        setUserPokemons(userPokemonIds);
+        setSelected(userPokemonIds);
 
-      const sorted = sortPokemons(pokemons, userPokemonIds);
-      setAllPokemons(sorted);
-
-      setLoadingData(false);
+        const sorted = sortPokemons(pokemons, userPokemonIds);
+        setAllPokemons(sorted);
+      } catch (err: any) {
+        console.error("❌ Error fetching bag:", err.response?.data || err.message);
+        toast.error("Error loading Pokémons");
+      } finally {
+        setLoadingData(false);
+      }
     };
 
     fetchData();
   }, [userId]);
 
-  // 🔹 Garantizar que el loading se vea mínimo 2s
+  // 🔹 Garantizar que el loading se vea mínimo 1s
   useEffect(() => {
     if (!loadingData) {
       const timer = setTimeout(() => setShowLoading(false), 1000);
@@ -104,39 +116,50 @@ const UserBagPage = ({ userId }: UserBagPageProps) => {
     }
   }, [loadingData]);
 
-  // 🔹 Alternar selección visual
+  // 🔹 Alternar selección
   const togglePokemon = (id: number) => {
     setSelected((prev) =>
       prev.includes(id) ? prev.filter((pid) => pid !== id) : [...prev, id]
     );
   };
 
-  // 🔹 Guardar cambios y reordenar
+  // 🔹 Guardar cambios
   const handleSave = async () => {
-    setSaving(true);
+    if (!userId) {
+      toast.error("No user found, cannot save.");
+      return;
+    }
 
+    setSaving(true);
     try {
       const toAdd = selected.filter((id) => !userPokemons.includes(id));
       const toRemove = userPokemons.filter((id) => !selected.includes(id));
 
-      for (const id of toAdd) await addPokemonToUser(userId, id);
-      for (const id of toRemove) await removePokemonFromUser(userId, id);
+      for (const id of toAdd) {
+        console.log(`➕ Adding Pokémon ${id} to user ${userId}`);
+        await addPokemonToUser(userId, id);
+      }
+
+      for (const id of toRemove) {
+        console.log(`➖ Removing Pokémon ${id} from user ${userId}`);
+        await removePokemonFromUser(userId, id);
+      }
 
       setUserPokemons(selected);
 
       const sortedAfterSave = sortPokemons(allPokemons, selected);
       setAllPokemons(sortedAfterSave);
 
-      toast.success("Pokemon's bag saved successfully!");
-    } catch (error) {
-      console.error(error);
-      toast.error("Error saving Pokemons");
+      toast.success("Pokémon bag saved successfully!");
+    } catch (err: any) {
+      console.error("❌ Error saving Pokémons:", err.response?.data || err.message);
+      toast.error(err.response?.data || "Error saving Pokémons");
     } finally {
       setSaving(false);
     }
   };
 
-  // 🔹 Filtrar por búsqueda
+  // 🔹 Filtro por búsqueda
   const filteredPokemons = allPokemons.filter((p) =>
     p.name.toLowerCase().includes(search.toLowerCase())
   );
@@ -153,7 +176,7 @@ const UserBagPage = ({ userId }: UserBagPageProps) => {
         }}
       >
         <motion.img
-          src="/pokeball.png" // ⚠️ asegúrate de poner la imagen en public/
+          src="/pokeball.png"
           alt="Loading Pokémons..."
           animate={{ rotate: 360 }}
           transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
@@ -167,10 +190,10 @@ const UserBagPage = ({ userId }: UserBagPageProps) => {
     <Box p={3} display="flex" flexDirection="column" height="100%" marginTop={6}>
       <ToastContainer position="top-right" autoClose={3000} hideProgressBar />
       <Typography variant="h4" gutterBottom textAlign="center">
-        My Pokemons
+        My Pokémons
       </Typography>
 
-      {/* 🔹 Indicador de cuántos Pokémon seleccionados / total */}
+      {/* 🔹 Indicador de cuántos seleccionados */}
       <Box textAlign="center" mb={2}>
         <Chip
           label={`${selected.length} / ${allPokemons.length}`}
