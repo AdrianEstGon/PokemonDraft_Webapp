@@ -142,7 +142,7 @@ export function useDraftLogic() {
     );
   }, [available, searchText]);
 
-  const recommendations = useMemo(() => {
+ const recommendations = useMemo(() => {
   const baseRecs =
     phase === "PICK" && currentTeam === "ALLY"
       ? advisor.recommend(
@@ -151,7 +151,36 @@ export function useDraftLogic() {
         )
       : filteredAvailable.map((p) => ({ pokemon: p.name, score: 0 }));
 
-  return baseRecs.map((rec) => {
+  // 👉 Contamos roles aliados ya escogidos
+  const roleCounts = allyPicks.reduce(
+    (acc, p) => {
+      if (p.role === "Supporter") acc.Supporter++;
+      if (p.role === "Defender") acc.Defender++;
+      if (p.role === "Attacker") acc.Attacker++;
+      return acc;
+    },
+    { Supporter: 0, Defender: 0, Attacker: 0 }
+  );
+
+  // 👉 Filtramos recomendaciones según límites
+  const filteredRecs = baseRecs.filter((rec) => {
+    const pokemon = allPokemons.find((p) => p.name === rec.pokemon);
+    if (!pokemon) return false;
+
+    // ❌ Si ya hay 2 Supporters y este es Supporter → fuera
+    if (roleCounts.Supporter >= 2 && pokemon.role === "Supporter") return false;
+
+    // ❌ Si ya hay 2 Defenders y este es Defender → fuera
+    if (roleCounts.Defender >= 2 && pokemon.role === "Defender") return false;
+
+    // ❌ Si ya hay 2 Attackers y este es Attacker → fuera
+    if (roleCounts.Attacker >= 2 && pokemon.role === "Attacker") return false;
+
+    return true;
+  });
+
+  // 👉 Bonus por tier
+  return filteredRecs.map((rec) => {
     const pokemon = allPokemons.find((p) => p.name === rec.pokemon);
     if (!pokemon) return rec;
 
@@ -173,7 +202,7 @@ export function useDraftLogic() {
 
     return { ...rec, score: rec.score + tierBonus };
   });
-}, [phase, step, enemyPicks, filteredAvailable, advisor, currentTeam, allPokemons]);
+}, [phase, step, enemyPicks, allyPicks, filteredAvailable, advisor, currentTeam, allPokemons]);
 
 
   const sortedAvailable = useMemo(() => {
