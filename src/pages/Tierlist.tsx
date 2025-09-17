@@ -25,7 +25,7 @@ interface Pokemon {
 
 const tiersList = ["S","A","B","C"] as const;
 const tierColors: Record<string, string> = {
-  S:"#ff5252", A:"#ff9800", B:"#ffeb3b", C:"#8bc34a", D:"#2196f3"
+  S:"#ff5252", A:"#ff9800", B:"#ffeb3b", C:"#8bc34a"
 };
 
 /* ---------------- DroppableTier ---------------- */
@@ -36,19 +36,37 @@ function DroppableTier({ id, title, color, children }: any) {
       ref={setNodeRef}
       elevation={3}
       sx={{
-        mb:1, p:1, borderRadius:1, bgcolor:color,
-        transition:"all 0.2s",
+        display: "flex",
+        flexDirection: "column",
+        borderRadius: 2,
+        bgcolor: color,
+        transition: "all 0.25s ease",
         boxShadow: isOver ? "0 6px 16px rgba(0,0,0,0.35)" : undefined,
-        transform: isOver ? "scale(1.02)" : undefined
+        transform: isOver ? "scale(1.02)" : undefined,
+        p: 1.5,
+        width: "100%",      // se adapta al ancho disponible
       }}
     >
-      <Typography variant="subtitle2" fontWeight="bold" sx={{ color:"#fff", mb:0.5 }}>
+      <Typography
+        variant="subtitle1"
+        fontWeight="bold"
+        sx={{ color: "#fff", mb: 1 }}
+      >
         Tier {title}
       </Typography>
-      <Box sx={{ display:"flex", gap:0.25, flexWrap:"wrap" }}>{children}</Box>
+      <Box
+        sx={{
+          display: "flex",
+          flexWrap: "wrap",   // 🔹 permite varias filas
+          gap: 0.75,
+        }}
+      >
+        {children}
+      </Box>
     </Paper>
   );
 }
+
 
 /* ---------------- AvailableDroppable ---------------- */
 function AvailableDroppable({ children }: any) {
@@ -58,9 +76,10 @@ function AvailableDroppable({ children }: any) {
       ref={setNodeRef}
       elevation={3}
       sx={{
-        p:0.5, borderRadius:1, bgcolor: isOver ? "#f0f0f0" : "#fafafa",
-        overflowY:"auto",
-        transition:"all 0.2s",
+        p:1.5,
+        borderRadius:2,
+        bgcolor: isOver ? "#f0f0f0" : "#fafafa",
+        transition:"all 0.25s ease",
         boxShadow: isOver ? "0 6px 16px rgba(0,0,0,0.2)" : undefined,
         transform: isOver ? "scale(1.01)" : undefined
       }}
@@ -71,7 +90,7 @@ function AvailableDroppable({ children }: any) {
 }
 
 /* ---------------- DraggablePokemon ---------------- */
-function DraggablePokemon({ pokemon, size=40 }: { pokemon: Pokemon; size?: number }) {
+function DraggablePokemon({ pokemon }: { pokemon: Pokemon }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({ id: String(pokemon.id) });
 
@@ -82,14 +101,19 @@ function DraggablePokemon({ pokemon, size=40 }: { pokemon: Pokemon; size?: numbe
     transition: "transform 0.15s ease"
   };
 
+  // Tamaño responsivo de cada carta
+  const size = "clamp(60px, 6vw, 96px)";
+
   return (
     <Card
       ref={setNodeRef}
       {...attributes} {...listeners}
       sx={{
-        width:size, height:size, borderRadius:1, p:0.1,
-        border:"1px solid rgba(0,0,0,0.1)", bgcolor:"#fff",
-        boxShadow:"0 1px 4px rgba(0,0,0,0.1)",
+        width:size, height:size,
+        borderRadius:2,
+        border:"1px solid rgba(0,0,0,0.08)",
+        bgcolor:"#fff",
+        boxShadow:"0 2px 6px rgba(0,0,0,0.12)",
         display:"flex", alignItems:"center", justifyContent:"center",
         ...style
       }}
@@ -98,7 +122,7 @@ function DraggablePokemon({ pokemon, size=40 }: { pokemon: Pokemon; size?: numbe
         component="img"
         image={pokemon.imageUrl}
         alt={pokemon.name}
-        sx={{ width:size-4, height:size-4, objectFit:"contain" }}
+        sx={{ width:`calc(${size} - 8px)`, height:`calc(${size} - 8px)`, objectFit:"contain" }}
       />
     </Card>
   );
@@ -169,8 +193,8 @@ export default function PokemonTierListPage() {
   };
 
   if (loading)
-  return (
-    <Box
+    return (
+      <Box
         sx={{
           flex: 1,
           height: "80vh",
@@ -180,80 +204,125 @@ export default function PokemonTierListPage() {
         }}
       >
         <motion.img
-          src="/pokeball.png" // ⚠️ asegúrate de poner la imagen en public/
+          src="/pokeball.png"
           alt="Loading Pokémons..."
           animate={{ rotate: 360 }}
           transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
-          style={{ width: "min(50vw, 180px)", height: "auto" }}
+          style={{ width: "min(40vw, 160px)", height: "auto" }}
         />
       </Box>
-  );
-
+    );
 
   const tiers: Record<string, Pokemon[]> = {};
   tiersList.forEach(t => { tiers[t] = pokemons.filter(p => p.tier===t); });
   const available = pokemons.filter(p => !p.tier);
 
   return (
-    <Box sx={{height:"100vh", width:"90vw", display:"flex", flexDirection:"column", p:1, mt:10}}>
+    <Box
+      sx={{
+        height:"100vh",
+        width:"100%",
+        display:"flex",
+        flexDirection:"column",
+        gap:2,
+        p:2,
+        pt:10, // 🔹 Respeta la NavBar
+        boxSizing:"border-box"
+      }}
+    >
       <Toaster position="top-right" />
       <DndContext
         collisionDetection={closestCenter}
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
       >
-        <Box sx={{flex:1, display:"flex", flexDirection:"column", gap:0, overflow:"hidden"}}>
-          <Box sx={{overflowY:"auto"}}>
-            {tiersList.map(t=>(
-              <DroppableTier key={t} id={t} title={t} color={tierColors[t]}>
-                {tiers[t].length===0
-                  ? <Typography color="white">Drag Pokemon here</Typography>
-                  : tiers[t].map(p=><DraggablePokemon key={p.id} pokemon={p} size={40} />)}
-              </DroppableTier>
-            ))}
-          </Box>
+        <Box
+          sx={{
+            flex:1,
+            display:"flex",
+            flexDirection:"column",
+            gap:2,
+            overflow:"hidden"
+          }}
+        >
+          {/* Tiers */}
+<Box
+  sx={{
+    flex: 1,
+    display: "flex",
+    flexDirection: "column",
+    gap: 2,
+    overflowY: "auto",  // 🔹 permite scroll si hay muchos Pokémon
+    minHeight: 0,       // 🔹 evita que el flexbox bloquee el crecimiento
+  }}
+>
+  {tiersList.map((t) => (
+    <DroppableTier
+      key={t}
+      id={t}
+      title={t}
+      color={tierColors[t]}
+    >
+      {tiers[t].length === 0 ? (
+        <Typography color="white" fontSize={12}>
+          Drag Pokemon here
+        </Typography>
+      ) : (
+        tiers[t].map((p) => <DraggablePokemon key={p.id} pokemon={p} />)
+      )}
+    </DroppableTier>
+  ))}
+</Box>
 
-          {/* Available ahora es droppable real */}
-          <AvailableDroppable>
-            <Box sx={{display:"grid", gap:0.1, gridTemplateColumns:"repeat(20, 1fr)"}}>
-              {available.map(p=><DraggablePokemon key={p.id} pokemon={p} size={80} />)}
-            </Box>
-          </AvailableDroppable>
+          {/* Disponibles */}
+          {available.length>0 && (
+            <AvailableDroppable>
+              <Box
+                sx={{
+                  display:"grid",
+                  gap:1,
+                  gridTemplateColumns:"repeat(auto-fill, minmax(clamp(70px, 8vw, 120px), 1fr))"
+                }}
+              >
+                {available.map(p=><DraggablePokemon key={p.id} pokemon={p} />)}
+              </Box>
+            </AvailableDroppable>
+          )}
         </Box>
 
-        {/* Overlay bonito */}
+        {/* Overlay */}
         <DragOverlay>
           {activePokemon && (
-            <Card
-              sx={{
-                width: 80,
-                height: 80,
-                borderRadius: 2,
-                p: 0.5,
-                bgcolor: "white",
-                boxShadow: "0 6px 16px rgba(0,0,0,0.35)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                transform: "scale(1.1)",
-                transition: "transform 0.15s ease"
-              }}
-            >
-              <CardMedia
-                component="img"
-                image={activePokemon.imageUrl}
-                alt={activePokemon.name}
-                sx={{ width:72, height:72, objectFit:"contain" }}
-              />
-            </Card>
+            <motion.div initial={{ scale:0.9, opacity:0.6 }} animate={{ scale:1.1, opacity:1 }}>
+              <Card
+                sx={{
+                  width: 96,
+                  height: 96,
+                  borderRadius: 2,
+                  p: 0.5,
+                  bgcolor: "white",
+                  boxShadow: "0 6px 16px rgba(0,0,0,0.35)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center"
+                }}
+              >
+                <CardMedia
+                  component="img"
+                  image={activePokemon.imageUrl}
+                  alt={activePokemon.name}
+                  sx={{ width:88, height:88, objectFit:"contain" }}
+                />
+              </Card>
+            </motion.div>
           )}
         </DragOverlay>
       </DndContext>
 
-      {/* Reset y Save */}
+      {/* Botones */}
       <Tooltip title="Reset Tier List">
         <IconButton
-          sx={{position:"fixed", bottom:72, right:16, bgcolor:"white", boxShadow:2}}
+          sx={{position:"fixed", bottom:80, right:16, bgcolor:"white", boxShadow:3}}
           onClick={handleReset}
         >
           <RestartAltIcon />
@@ -263,7 +332,7 @@ export default function PokemonTierListPage() {
       <Tooltip title={saving ? "Saving..." : "Save Tier List"}>
         <span>
           <IconButton
-            sx={{position:"fixed", bottom:16, right:16, bgcolor:"white", boxShadow:2}}
+            sx={{position:"fixed", bottom:16, right:16, bgcolor:"white", boxShadow:3}}
             onClick={handleSave}
             disabled={saving}
           >

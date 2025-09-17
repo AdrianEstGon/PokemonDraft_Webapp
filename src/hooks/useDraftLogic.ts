@@ -177,12 +177,16 @@ export function useDraftLogic() {
 
 
   const sortedAvailable = useMemo(() => {
-    return [...filteredAvailable].sort(
-      (a, b) =>
-        recommendations.findIndex((r) => r.pokemon === a.name) -
-        recommendations.findIndex((r) => r.pokemon === b.name)
-    );
-  }, [filteredAvailable, recommendations]);
+  return [...filteredAvailable].sort((a, b) => {
+    const scoreA =
+      recommendations.find((r) => r.pokemon === a.name)?.score ?? -Infinity;
+    const scoreB =
+      recommendations.find((r) => r.pokemon === b.name)?.score ?? -Infinity;
+
+    return scoreB - scoreA; // Mayor a menor
+  });
+}, [filteredAvailable, recommendations]);
+
 
   // Manejo de selección (ban o pick)
   const handleSelect = (pokemon: any) => {
