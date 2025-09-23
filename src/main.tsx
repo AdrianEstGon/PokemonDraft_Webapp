@@ -38,7 +38,7 @@ createRoot(document.getElementById("root")!).render(
           © 2025 Pokemon Unite Drafter. All rights reserved. <br />
           This app is a fan-made draft simulator and is not affiliated with,
           endorsed, or sponsored by Nintendo, The Pokémon Company, Game Freak, or Tencent. <br />
-          Pokémon and Pokémon character names are trademarks of their respective owners.
+          Pokémon and Pokémon character names are trademarks of their respective owners
         </Typography>
       </Box>
     </Box>
