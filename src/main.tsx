@@ -1,4 +1,4 @@
-import { Box, CssBaseline, ThemeProvider } from "@mui/material";
+import { Box, CssBaseline, ThemeProvider, Typography } from "@mui/material";
 import { createRoot } from "react-dom/client";
 import { StrictMode } from "react";
 import AppRouter from "./router/AppRouter.tsx";
@@ -24,6 +24,8 @@ createRoot(document.getElementById("root")!).render(
         sx={{
           minHeight: "100vh",
           width: "100%",
+          display: "flex",
+          flexDirection: "column",
           color: PALETTE.textPrimary,
           background: `
             radial-gradient(1200px 600px at 80% -10%, ${PALETTE.blue}22, transparent 60%),
@@ -43,8 +45,29 @@ createRoot(document.getElementById("root")!).render(
           "& > *": { position: "relative", zIndex: 1 },
         }}
       >
-        <AppRouter />
-        <ToastContainer position="top-right" autoClose={3000} theme="dark" />
+        <Box sx={{ flex: 1 }}>
+          <AppRouter />
+          <ToastContainer position="top-right" autoClose={3000} theme="dark" />
+        </Box>
+
+        {/* Footer con disclaimer */}
+        <Box
+          component="footer"
+          sx={{
+            textAlign: "center",
+            py: 1,
+            px: 2,
+            backgroundColor: "rgba(10,14,26,0.6)",
+            borderTop: `1px solid ${PALETTE.border}`,
+          }}
+        >
+          <Typography variant="caption" color="text.secondary">
+            © 2025 Pokemon Unite Drafter. All rights reserved. <br />
+            This app is a fan-made draft simulator and is not affiliated with,
+            endorsed, or sponsored by Nintendo, The Pokémon Company, Game Freak, or Tencent. <br />
+            Pokémon and Pokémon character names are trademarks of their respective owners
+          </Typography>
+        </Box>
       </Box>
     </ThemeProvider>
   </StrictMode>
