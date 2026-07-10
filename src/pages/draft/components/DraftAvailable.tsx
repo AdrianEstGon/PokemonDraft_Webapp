@@ -135,7 +135,22 @@ export default function DraftAvailable({
             key={p.name}
             variant="outlined"
             onClick={() => onSelect(p)}
-            sx={{ aspectRatio: "1 / 1", width: "100%", p: 1, borderRadius: 3, position: "relative" }}
+            sx={{
+              aspectRatio: "1 / 1",
+              width: "100%",
+              p: 1,
+              borderRadius: 3,
+              position: "relative",
+              bgcolor: "rgba(255,255,255,0.03)",
+              borderColor: "rgba(255,255,255,0.10)",
+              transition: "transform .12s ease, box-shadow .12s ease",
+              "&:hover": {
+                transform: "translateY(-2px)",
+                borderColor: "secondary.main",
+                boxShadow: "0 8px 20px rgba(0,0,0,0.4)",
+                bgcolor: "rgba(58,160,255,0.08)",
+              },
+            }}
           >
             <img
               src={p.imageUrl}

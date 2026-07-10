@@ -1,4 +1,4 @@
-import { Box, Button, Container } from "@mui/material";
+import { Box, Button, Container, Typography } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
@@ -24,14 +24,34 @@ export default function StartPage() {
   return (
     <Box
       sx={{
-        height: "100vh",
+        minHeight: "100vh",
         width: "100%",
         display: "flex",
+        flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        background: "linear-gradient(135deg, #a2d2ff, #bde0fe)",
+        gap: { xs: 3, sm: 5 },
+        pt: 8,
       }}
     >
+      <Box sx={{ textAlign: "center", px: 2 }}>
+        <Typography
+          variant="h4"
+          sx={{
+            fontWeight: 800,
+            letterSpacing: 1.5,
+            background: "linear-gradient(90deg,#ff4d54,#ffcb3d)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+          }}
+        >
+          READY TO DRAFT?
+        </Typography>
+        <Typography variant="body1" color="text.secondary" sx={{ mt: 0.5 }}>
+          Tap the Poké Ball to start banning &amp; picking
+        </Typography>
+      </Box>
+
       <Container sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
         {/* Pokéball con animación */}
         <motion.div

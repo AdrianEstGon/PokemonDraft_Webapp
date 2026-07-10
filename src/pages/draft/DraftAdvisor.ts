@@ -1,60 +1,52 @@
-export interface Counter {
-  id: number;
-  pokemonId: number;
-  pokemonName: string;
-  counterPokemonId: number;
-  counterPokemonName: string;
-  value: number;
-}
-
 export interface Recommendation {
   pokemon: string;
   score: number;
 }
 
+/** Normalised join key so "Alolan Ninetales" == "alolanninetales" etc. */
+const norm = (s: string) => String(s || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+
 export class DraftAdvisor {
-  private counters: Counter[];
+  /** normalizedAlly -> (normalizedEnemy -> win% of ally vs enemy) */
+  private index: Map<string, Map<string, number>>;
 
-  constructor(counters: Counter[]) {
-    this.counters = counters;
+  constructor(matchups: Record<string, Record<string, number>>) {
+    this.index = new Map();
+    for (const [ally, row] of Object.entries(matchups || {})) {
+      const m = new Map<string, number>();
+      for (const [enemy, value] of Object.entries(row || {})) {
+        m.set(norm(enemy), value);
+      }
+      this.index.set(norm(ally), m);
+    }
   }
 
   /**
-   * Busca el valor de counter de ally contra enemy.
-   * Si no existe, devuelve 50 como neutro.
+   * Win % of `ally` against `enemy` (0-100). 50 = neutral / unknown.
    */
-  private getCounterValue(ally: string, enemy: string): number {
-    const found = this.counters.find(
-      (c) => c.pokemonName === ally && c.counterPokemonName === enemy
-    );
-    return found ? found.value : 50;
+  getCounterValue(ally: string, enemy: string): number {
+    return this.index.get(norm(ally))?.get(norm(enemy)) ?? 50;
   }
 
   /**
-   * Calcula recomendaciones basadas en los picks enemigos.
+   * Average matchup score of each available pick against the current enemy picks.
+   * With no enemy picks yet, everything is neutral (0-delta) so ordering falls back
+   * to tier/role logic applied by the caller.
    */
   recommend(enemyPicks: string[], availablePokemons: string[]): Recommendation[] {
     if (!enemyPicks.length) {
       return availablePokemons.map((p) => ({ pokemon: p, score: 0 }));
     }
 
-    const recommendations: Recommendation[] = [];
-
-    availablePokemons.forEach((ally) => {
-      let score = 0;
-
-      enemyPicks.forEach((enemy) => {
-        score += this.getCounterValue(ally, enemy);
-      });
-
-      // promedio
-      score = score / enemyPicks.length;
-
-      recommendations.push({ pokemon: ally, score });
+    const recommendations = availablePokemons.map((ally) => {
+      const total = enemyPicks.reduce(
+        (sum, enemy) => sum + this.getCounterValue(ally, enemy),
+        0
+      );
+      return { pokemon: ally, score: total / enemyPicks.length };
     });
 
     recommendations.sort((a, b) => b.score - a.score);
-
     return recommendations;
   }
 }

@@ -12,6 +12,7 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
+import CatchingPokemonIcon from "@mui/icons-material/CatchingPokemon";
 import { login, register } from "../services/AuthService";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -71,31 +72,44 @@ const LoginPage: React.FC = () => {
   return (
     <Box
       sx={{
-        height: "100vh",
+        minHeight: "100vh",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        backgroundColor: "#a2d2ff",
-        backgroundImage: `url("/logo.png")`,
-        backgroundRepeat: "no-repeat",
-        backgroundPosition: "center",
-        backgroundSize: "60%",
-        backgroundBlendMode: "overlay",
+        p: 2,
       }}
     >
       <Paper
-        elevation={6}
+        elevation={0}
         sx={{
-          p: 4,
-          width: 350,
-          borderRadius: 3,
-          backgroundColor: "rgba(255,255,255,0.85)", // 🔹 transparente
-          backdropFilter: "blur(6px)", // 🔹 efecto blur opcional para mayor legibilidad
+          p: { xs: 3, sm: 4 },
+          width: "100%",
+          maxWidth: 380,
+          borderRadius: 4,
+          backgroundColor: "rgba(22,29,46,0.72)",
+          backdropFilter: "blur(14px)",
+          boxShadow: "0 24px 60px rgba(0,0,0,0.5)",
         }}
       >
-        <Typography variant="h5" textAlign="center" mb={2}>
-          Pokemon Unite Drafter
-        </Typography>
+        <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", mb: 2 }}>
+          <CatchingPokemonIcon sx={{ fontSize: 54, color: "#ee1c25", mb: 1 }} />
+          <Typography
+            variant="h5"
+            textAlign="center"
+            sx={{
+              fontWeight: 800,
+              letterSpacing: 1,
+              background: "linear-gradient(90deg,#ff4d54,#ffcb3d)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+            }}
+          >
+            UNITE DRAFTER
+          </Typography>
+          <Typography variant="body2" color="text.secondary" textAlign="center">
+            Draft smarter with live counter data
+          </Typography>
+        </Box>
 
         <Tabs value={tab} onChange={(_, v) => setTab(v)} centered>
           <Tab label="Login" />

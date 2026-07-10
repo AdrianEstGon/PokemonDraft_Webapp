@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import {
+  Box,
   Container,
   Grid,
   Paper,
@@ -10,7 +11,9 @@ import {
   DialogContent,
   Stack,
   Button,
+  Chip,
 } from "@mui/material";
+import UpdateIcon from "@mui/icons-material/Update";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import UndoIcon from "@mui/icons-material/Undo";
 import DraftHeader from "./components/DraftHeader";
@@ -41,6 +44,7 @@ export default function DraftPage() {
     setWhoStarts,
     loading,
     undo,
+    countersMeta,
   } = useDraftLogic();
 
   const [openFirstPickDialog, setOpenFirstPickDialog] = useState(false);
@@ -60,6 +64,16 @@ export default function DraftPage() {
     setOpenFirstPickDialog(false);
   };
 
+  const freshness = (() => {
+    if (!countersMeta?.updatedAt) return null;
+    const isLive = countersMeta.source === "uniteapi.dev";
+    const when = new Date(countersMeta.updatedAt);
+    const label = isNaN(when.getTime())
+      ? countersMeta.source
+      : when.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+    return { isLive, label };
+  })();
+
   return (
     <Container
       sx={{
@@ -75,18 +89,44 @@ export default function DraftPage() {
           width: "100%",
           maxWidth: 1200,
           p: { xs: 2, sm: 3 },
-          borderRadius: 3,
-          boxShadow: 6,
+          borderRadius: 4,
+          boxShadow: "0 24px 60px rgba(0,0,0,0.45)",
           display: "flex",
           flexDirection: "column",
           gap: { xs: 2, sm: 3 },
           position: "relative",
           overflowY: "auto",
           maxHeight: "95vh",
-          bgcolor: "#fdfdfd",
+          bgcolor: "rgba(18,24,38,0.85)",
+          backdropFilter: "blur(10px)",
+          mt: 6,
         }}
       >
         <DraftHeader currentTeam={currentTeam} phase={phase} />
+
+        {freshness && (
+          <Box sx={{ display: "flex", justifyContent: "center", mt: -1 }}>
+            <Tooltip
+              title={
+                freshness.isLive
+                  ? "Counter data scraped daily from uniteapi.dev"
+                  : "Using built-in fallback data until the daily scrape runs"
+              }
+            >
+              <Chip
+                size="small"
+                icon={<UpdateIcon sx={{ fontSize: 16 }} />}
+                label={
+                  freshness.isLive
+                    ? `Counters · uniteapi.dev · ${freshness.label}`
+                    : `Counters · fallback data`
+                }
+                color={freshness.isLive ? "secondary" : "default"}
+                variant="outlined"
+              />
+            </Tooltip>
+          </Box>
+        )}
 
         <Grid container spacing={{ xs: 2, sm: 3 }}>
           {/* Bans */}
@@ -94,10 +134,9 @@ export default function DraftPage() {
             <Paper
               sx={{
                 p: 2,
-                borderRadius: 2,
+                borderRadius: 3,
                 height: "100%",
-                boxShadow: 3,
-                bgcolor: "#fff",
+                bgcolor: "#1c2438",
               }}
             >
               <DraftBans allyBans={allyBans} enemyBans={enemyBans} />
@@ -109,10 +148,9 @@ export default function DraftPage() {
             <Paper
               sx={{
                 p: 2,
-                borderRadius: 2,
+                borderRadius: 3,
                 height: "100%",
-                boxShadow: 3,
-                bgcolor: "#fff",
+                bgcolor: "#1c2438",
               }}
             >
               <DraftPicks allyPicks={allyPicks} enemyPicks={enemyPicks} />
@@ -124,10 +162,9 @@ export default function DraftPage() {
             <Paper
               sx={{
                 p: 2,
-                borderRadius: 2,
+                borderRadius: 3,
                 height: "100%",
-                boxShadow: 3,
-                bgcolor: "#fff",
+                bgcolor: "#1c2438",
                 overflowY: "auto",
               }}
             >

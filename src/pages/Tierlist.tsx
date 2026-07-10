@@ -78,7 +78,7 @@ function AvailableDroppable({ children }: any) {
       sx={{
         p:1.5,
         borderRadius:2,
-        bgcolor: isOver ? "#f0f0f0" : "#fafafa",
+        bgcolor: isOver ? "#232c44" : "#161d2e",
         transition:"all 0.25s ease",
         boxShadow: isOver ? "0 6px 16px rgba(0,0,0,0.2)" : undefined,
         transform: isOver ? "scale(1.01)" : undefined
@@ -322,7 +322,7 @@ export default function PokemonTierListPage() {
       {/* Botones */}
       <Tooltip title="Reset Tier List">
         <IconButton
-          sx={{position:"fixed", bottom:80, right:16, bgcolor:"white", boxShadow:3}}
+          sx={{position:"fixed", bottom:80, right:16, bgcolor:"#1c2438", color:"#fff", border:"1px solid #26304a", boxShadow:4, "&:hover":{bgcolor:"#232c44"}}}
           onClick={handleReset}
         >
           <RestartAltIcon />
@@ -332,7 +332,7 @@ export default function PokemonTierListPage() {
       <Tooltip title={saving ? "Saving..." : "Save Tier List"}>
         <span>
           <IconButton
-            sx={{position:"fixed", bottom:16, right:16, bgcolor:"white", boxShadow:3}}
+            sx={{position:"fixed", bottom:16, right:16, bgcolor:"#ee1c25", color:"#fff", boxShadow:4, "&:hover":{bgcolor:"#ff4d54"}}}
             onClick={handleSave}
             disabled={saving}
           >

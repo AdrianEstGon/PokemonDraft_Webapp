@@ -1,3 +1,40 @@
+# Pokémon Unite Drafter
+
+## Counter data (automated, daily)
+
+Pick recommendations are driven by Pokémon match-up percentages. There is **no
+manual configuration** anymore — the old admin "Settings" counter editor was removed.
+
+- **Live source:** [uniteapi.dev/en/counters](https://uniteapi.dev/en/counters). The
+  site is behind Cloudflare, so it can't be fetched directly from the browser; a
+  headless browser scrapes it on a schedule instead.
+- **Pipeline:** `.github/workflows/update-counters.yml` runs every day at 06:00 UTC
+  (and on-demand from the Actions tab). It runs `npm run scrape:counters`
+  ([scripts/scrape-counters.mjs](scripts/scrape-counters.mjs), Playwright) and commits
+  [public/counters.json](public/counters.json) when it changes.
+- **The app** loads `counters.json` as a static file (same-origin, no CORS) via
+  [src/services/CounterService.tsx](src/services/CounterService.tsx) and builds
+  recommendations in [src/pages/draft/DraftAdvisor.ts](src/pages/draft/DraftAdvisor.ts).
+  Names are joined to the backend roster by a normalised key, so spelling differences
+  are harmless. The draft screen shows a chip with the data's source and date.
+- **Fallback seed:** `npm run seed:counters`
+  ([scripts/gen-seed.mjs](scripts/gen-seed.mjs)) regenerates a role-based heuristic
+  `counters.json` (`source: "seed"`). The scraper **never** overwrites the file with a
+  partial result, so the app keeps working if a scrape fails.
+
+### First-run note
+
+The scraper's selectors are best-effort (the live HTML couldn't be inspected up front).
+Run it once headed to watch it and adjust the selectors in `scrape-counters.mjs` if the
+site's markup differs:
+
+```bash
+npm install -D playwright && npx playwright install chromium
+HEADLESS=0 npm run scrape:counters
+```
+
+---
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
