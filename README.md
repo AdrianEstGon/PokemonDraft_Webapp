@@ -22,11 +22,25 @@ manual configuration** anymore — the old admin "Settings" counter editor was r
   `counters.json` (`source: "seed"`). The scraper **never** overwrites the file with a
   partial result, so the app keeps working if a scrape fails.
 
-### First-run note
+### Recomendación
 
-The scraper's selectors are best-effort (the live HTML couldn't be inspected up front).
-Run it once headed to watch it and adjust the selectors in `scrape-counters.mjs` if the
-site's markup differs:
+La recomendación de pick se basa **únicamente** en los valores *Strong against* /
+*Weak against* de uniteapi (win % del pick contra cada enemigo). No hay bonus de tier
+ni límites de rol. Aparece en tu turno de pick, una vez que haya **al menos un enemigo
+elegido** (es un counter-pick: necesita saber contra quién).
+
+### Cómo cargar los datos reales de uniteapi
+
+uniteapi está tras Cloudflare, que bloquea con dureza el scraping desde servidores/CI.
+La vía **fiable** es tu propio navegador (que ya pasó el challenge):
+
+1. Abre <https://uniteapi.dev/en/counters>, pestaña **General**, filtro **All**, y baja
+   hasta el final para cargar todas las filas.
+2. Abre la consola (F12 → Console), pega el contenido de
+   [scripts/browser-scrape.js](scripts/browser-scrape.js) y Enter.
+3. Se descarga `counters.json`. Cópialo a `public/counters.json`, commitea y despliega.
+
+Alternativa automatizable (best-effort, puede fallar por Cloudflare en CI):
 
 ```bash
 npm install -D playwright && npx playwright install chromium
