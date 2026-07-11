@@ -23,9 +23,18 @@ export class DraftAdvisor {
 
   /**
    * Win % of `ally` against `enemy` (0-100). 50 = neutral / unknown.
+   * uniteapi only publishes each Pokémon's top strong/weak match-ups, so the
+   * matrix is sparse: if we don't have ally→enemy, fall back to the reciprocal
+   * enemy→ally (100 - that) before defaulting to neutral.
    */
   getCounterValue(ally: string, enemy: string): number {
-    return this.index.get(norm(ally))?.get(norm(enemy)) ?? 50;
+    const direct = this.index.get(norm(ally))?.get(norm(enemy));
+    if (direct != null) return direct;
+
+    const reverse = this.index.get(norm(enemy))?.get(norm(ally));
+    if (reverse != null) return 100 - reverse;
+
+    return 50;
   }
 
   /**

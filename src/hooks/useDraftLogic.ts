@@ -5,7 +5,7 @@ import { getCounterData, type CounterData } from "../services/CounterService";
 import { getUserPokemons } from "../services/BagService";
 
 type Team = "ALLY" | "ENEMY";
-type Phase = "ALLY_BANS" | "ENEMY_BANS" | "ASK_FIRST_PICK" | "PICK";
+type Phase = "ASK_FIRST_PICK" | "PICK";
 type ClassFilter =
   | "ALL"
   | "Attacker"
@@ -18,22 +18,18 @@ type DraftState = {
   phase: Phase;
   step: number;
   whoStarts: Team | null;
-  allyBans: any[];
-  enemyBans: any[];
   allyPicks: any[];
   enemyPicks: any[];
 };
 
 export function useDraftLogic() {
   const [whoStarts, setWhoStarts] = useState<Team | null>(null);
-  const [phase, setPhase] = useState<Phase>("ALLY_BANS");
+  const [phase, setPhase] = useState<Phase>("ASK_FIRST_PICK");
   const [step, setStep] = useState(0);
 
   const [classFilter, setClassFilter] = useState<ClassFilter>("ALL");
   const [onlyMyPokemons, setOnlyMyPokemons] = useState(false);
 
-  const [allyBans, setAllyBans] = useState<any[]>([]);
-  const [enemyBans, setEnemyBans] = useState<any[]>([]);
   const [allyPicks, setAllyPicks] = useState<any[]>([]);
   const [enemyPicks, setEnemyPicks] = useState<any[]>([]);
   const [searchText, setSearchText] = useState("");
@@ -50,15 +46,7 @@ export function useDraftLogic() {
   const saveSnapshot = () => {
     setHistory((prev) => [
       ...prev,
-      {
-        phase,
-        step,
-        whoStarts,
-        allyBans,
-        enemyBans,
-        allyPicks,
-        enemyPicks,
-      },
+      { phase, step, whoStarts, allyPicks, enemyPicks },
     ]);
   };
 
@@ -101,42 +89,32 @@ export function useDraftLogic() {
   }, [whoStarts]);
 
   const currentTeam: Team | null = useMemo(() => {
-    if (phase === "ALLY_BANS") return "ALLY";
-    if (phase === "ENEMY_BANS") return "ENEMY";
-    if (phase === "ASK_FIRST_PICK") return null;
     if (phase === "PICK") return pickOrder[step] ?? null;
     return null;
   }, [phase, step, pickOrder]);
 
-  const totalSteps = useMemo(() => {
-    if (phase === "ALLY_BANS" || phase === "ENEMY_BANS") return 3;
-    if (phase === "PICK") return pickOrder.length;
-    return 0;
-  }, [phase, pickOrder]);
+  const totalSteps = useMemo(
+    () => (phase === "PICK" ? pickOrder.length : 0),
+    [phase, pickOrder]
+  );
 
   const available = useMemo(() => {
-    const bannedForPick = [...allyBans, ...enemyBans].map((x) => x.name);
-
     return allPokemons.filter((p) => {
       const alreadyPicked = [...allyPicks, ...enemyPicks].some(
         (x) => x.name === p.name
       );
-      const banned = phase === "PICK" ? bannedForPick.includes(p.name) : false;
       const classOk = classFilter === "ALL" || p.role === classFilter;
       const myPokemonOk = !onlyMyPokemons || userPokemons.includes(p.name);
 
-      return !alreadyPicked && !banned && classOk && myPokemonOk;
+      return !alreadyPicked && classOk && myPokemonOk;
     });
   }, [
     allPokemons,
-    allyBans,
-    enemyBans,
     allyPicks,
     enemyPicks,
     classFilter,
     onlyMyPokemons,
     userPokemons,
-    phase,
   ]);
 
   const filteredAvailable = useMemo(() => {
@@ -145,121 +123,87 @@ export function useDraftLogic() {
     );
   }, [available, searchText]);
 
- const recommendations = useMemo(() => {
-  const baseRecs =
-    phase === "PICK" && currentTeam === "ALLY"
-      ? advisor.recommend(
-          enemyPicks.map((p) => p.name),
-          filteredAvailable.map((p) => p.name)
-        )
-      : filteredAvailable.map((p) => ({ pokemon: p.name, score: 0 }));
+  const recommendations = useMemo(() => {
+    const baseRecs =
+      phase === "PICK" && currentTeam === "ALLY"
+        ? advisor.recommend(
+            enemyPicks.map((p) => p.name),
+            filteredAvailable.map((p) => p.name)
+          )
+        : filteredAvailable.map((p) => ({ pokemon: p.name, score: 0 }));
 
-  // 👉 Contamos roles aliados ya escogidos
-  const roleCounts = allyPicks.reduce(
-    (acc, p) => {
-      if (p.role === "Supporter") acc.Supporter++;
-      if (p.role === "Defender") acc.Defender++;
-      if (p.role === "Attacker") acc.Attacker++;
-      return acc;
-    },
-    { Supporter: 0, Defender: 0, Attacker: 0 }
-  );
+    // 👉 Contamos roles aliados ya escogidos
+    const roleCounts = allyPicks.reduce(
+      (acc, p) => {
+        if (p.role === "Supporter") acc.Supporter++;
+        if (p.role === "Defender") acc.Defender++;
+        if (p.role === "Attacker") acc.Attacker++;
+        return acc;
+      },
+      { Supporter: 0, Defender: 0, Attacker: 0 }
+    );
 
-  // 👉 Filtramos recomendaciones según límites
-  const filteredRecs = baseRecs.filter((rec) => {
-    const pokemon = allPokemons.find((p) => p.name === rec.pokemon);
-    if (!pokemon) return false;
+    // 👉 Filtramos recomendaciones según límites
+    const filteredRecs = baseRecs.filter((rec) => {
+      const pokemon = allPokemons.find((p) => p.name === rec.pokemon);
+      if (!pokemon) return false;
+      if (roleCounts.Supporter >= 2 && pokemon.role === "Supporter") return false;
+      if (roleCounts.Defender >= 2 && pokemon.role === "Defender") return false;
+      if (roleCounts.Attacker >= 2 && pokemon.role === "Attacker") return false;
+      return true;
+    });
 
-    // ❌ Si ya hay 2 Supporters y este es Supporter → fuera
-    if (roleCounts.Supporter >= 2 && pokemon.role === "Supporter") return false;
+    // 👉 Bonus por tier
+    return filteredRecs.map((rec) => {
+      const pokemon = allPokemons.find((p) => p.name === rec.pokemon);
+      if (!pokemon) return rec;
 
-    // ❌ Si ya hay 2 Defenders y este es Defender → fuera
-    if (roleCounts.Defender >= 2 && pokemon.role === "Defender") return false;
+      let tierBonus = 0;
+      switch (pokemon.tier) {
+        case "S":
+          tierBonus = 3;
+          break;
+        case "A":
+          tierBonus = 1;
+          break;
+        case "B":
+          tierBonus = -1;
+          break;
+        case "C":
+          tierBonus = -3;
+          break;
+      }
 
-    // ❌ Si ya hay 2 Attackers y este es Attacker → fuera
-    if (roleCounts.Attacker >= 2 && pokemon.role === "Attacker") return false;
-
-    return true;
-  });
-
-  // 👉 Bonus por tier
-  return filteredRecs.map((rec) => {
-    const pokemon = allPokemons.find((p) => p.name === rec.pokemon);
-    if (!pokemon) return rec;
-
-    let tierBonus = 0;
-    switch (pokemon.tier) {
-      case "S":
-        tierBonus = 3;
-        break;
-      case "A":
-        tierBonus = 1;
-        break;
-      case "B":
-        tierBonus = -1;
-        break;
-      case "C":
-        tierBonus = -3;
-        break;
-    }
-
-    return { ...rec, score: rec.score + tierBonus };
-  });
-}, [phase, step, enemyPicks, allyPicks, filteredAvailable, advisor, currentTeam, allPokemons]);
-
+      return { ...rec, score: rec.score + tierBonus };
+    });
+  }, [phase, enemyPicks, allyPicks, filteredAvailable, advisor, currentTeam, allPokemons]);
 
   const sortedAvailable = useMemo(() => {
-  return [...filteredAvailable].sort((a, b) => {
-    const scoreA =
-      recommendations.find((r) => r.pokemon === a.name)?.score ?? -Infinity;
-    const scoreB =
-      recommendations.find((r) => r.pokemon === b.name)?.score ?? -Infinity;
+    return [...filteredAvailable].sort((a, b) => {
+      const scoreA =
+        recommendations.find((r) => r.pokemon === a.name)?.score ?? -Infinity;
+      const scoreB =
+        recommendations.find((r) => r.pokemon === b.name)?.score ?? -Infinity;
+      return scoreB - scoreA; // Mayor a menor
+    });
+  }, [filteredAvailable, recommendations]);
 
-    return scoreB - scoreA; // Mayor a menor
-  });
-}, [filteredAvailable, recommendations]);
-
-
-  // Manejo de selección (ban o pick)
+  // Manejo de selección (pick)
   const handleSelect = (pokemon: any) => {
-    saveSnapshot(); // Guardar estado antes de modificar nada
+    if (phase !== "PICK") return;
+    const team = currentTeam;
+    if (!team) return;
 
-    if (phase === "ALLY_BANS") {
-      setAllyBans((prev) => [...prev, pokemon]);
-      if (step + 1 < 3) {
-        setStep((s) => s + 1);
-      } else {
-        setPhase("ENEMY_BANS");
-        setStep(0);
-      }
-      return;
+    saveSnapshot();
+
+    if (team === "ALLY") {
+      setAllyPicks((prev) => [...prev, pokemon]);
+    } else {
+      setEnemyPicks((prev) => [...prev, pokemon]);
     }
 
-    if (phase === "ENEMY_BANS") {
-      setEnemyBans((prev) => [...prev, pokemon]);
-      if (step + 1 < 3) {
-        setStep((s) => s + 1);
-      } else {
-        setPhase("ASK_FIRST_PICK");
-        setStep(0);
-      }
-      return;
-    }
-
-    if (phase === "PICK") {
-      const team = currentTeam;
-      if (!team) return;
-
-      if (team === "ALLY") {
-        setAllyPicks((prev) => [...prev, pokemon]);
-      } else {
-        setEnemyPicks((prev) => [...prev, pokemon]);
-      }
-
-      if (step + 1 < totalSteps) {
-        setStep((s) => s + 1);
-      }
-      return;
+    if (step + 1 < totalSteps) {
+      setStep((s) => s + 1);
     }
   };
 
@@ -272,8 +216,6 @@ export function useDraftLogic() {
       setPhase(last.phase);
       setStep(last.step);
       setWhoStarts(last.whoStarts);
-      setAllyBans(last.allyBans);
-      setEnemyBans(last.enemyBans);
       setAllyPicks(last.allyPicks);
       setEnemyPicks(last.enemyPicks);
 
@@ -290,10 +232,8 @@ export function useDraftLogic() {
 
   const reset = () => {
     setWhoStarts(null);
-    setPhase("ALLY_BANS");
+    setPhase("ASK_FIRST_PICK");
     setStep(0);
-    setAllyBans([]);
-    setEnemyBans([]);
     setAllyPicks([]);
     setEnemyPicks([]);
     setClassFilter("ALL");
@@ -312,8 +252,6 @@ export function useDraftLogic() {
     setClassFilter,
     onlyMyPokemons,
     setOnlyMyPokemons,
-    allyBans,
-    enemyBans,
     allyPicks,
     enemyPicks,
     searchText,
