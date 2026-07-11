@@ -123,60 +123,18 @@ export function useDraftLogic() {
     );
   }, [available, searchText]);
 
+  // Recomendación basada ÚNICAMENTE en los counters (Strong/Weak against de
+  // uniteapi.dev): el score es el win % medio del pick contra el equipo enemigo.
+  // Sin bonus de tier ni límites de rol: nada más que los counters.
   const recommendations = useMemo(() => {
-    const baseRecs =
-      phase === "PICK" && currentTeam === "ALLY"
-        ? advisor.recommend(
-            enemyPicks.map((p) => p.name),
-            filteredAvailable.map((p) => p.name)
-          )
-        : filteredAvailable.map((p) => ({ pokemon: p.name, score: 0 }));
-
-    // 👉 Contamos roles aliados ya escogidos
-    const roleCounts = allyPicks.reduce(
-      (acc, p) => {
-        if (p.role === "Supporter") acc.Supporter++;
-        if (p.role === "Defender") acc.Defender++;
-        if (p.role === "Attacker") acc.Attacker++;
-        return acc;
-      },
-      { Supporter: 0, Defender: 0, Attacker: 0 }
+    if (!(phase === "PICK" && currentTeam === "ALLY") || enemyPicks.length === 0) {
+      return filteredAvailable.map((p) => ({ pokemon: p.name, score: 0 }));
+    }
+    return advisor.recommend(
+      enemyPicks.map((p) => p.name),
+      filteredAvailable.map((p) => p.name)
     );
-
-    // 👉 Filtramos recomendaciones según límites
-    const filteredRecs = baseRecs.filter((rec) => {
-      const pokemon = allPokemons.find((p) => p.name === rec.pokemon);
-      if (!pokemon) return false;
-      if (roleCounts.Supporter >= 2 && pokemon.role === "Supporter") return false;
-      if (roleCounts.Defender >= 2 && pokemon.role === "Defender") return false;
-      if (roleCounts.Attacker >= 2 && pokemon.role === "Attacker") return false;
-      return true;
-    });
-
-    // 👉 Bonus por tier
-    return filteredRecs.map((rec) => {
-      const pokemon = allPokemons.find((p) => p.name === rec.pokemon);
-      if (!pokemon) return rec;
-
-      let tierBonus = 0;
-      switch (pokemon.tier) {
-        case "S":
-          tierBonus = 3;
-          break;
-        case "A":
-          tierBonus = 1;
-          break;
-        case "B":
-          tierBonus = -1;
-          break;
-        case "C":
-          tierBonus = -3;
-          break;
-      }
-
-      return { ...rec, score: rec.score + tierBonus };
-    });
-  }, [phase, enemyPicks, allyPicks, filteredAvailable, advisor, currentTeam, allPokemons]);
+  }, [phase, currentTeam, enemyPicks, filteredAvailable, advisor]);
 
   const sortedAvailable = useMemo(() => {
     return [...filteredAvailable].sort((a, b) => {
