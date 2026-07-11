@@ -16,8 +16,10 @@ import {
   Paper,
   Chip,
 } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import { toast, ToastContainer } from "react-toastify";
 import { motion } from "framer-motion";
+import { roleColor } from "../theme";
 
 interface Pokemon {
   id: number;
@@ -55,23 +57,8 @@ const UserBagPage = ({ userId }: UserBagPageProps) => {
     });
   };
 
-  // 🔹 Color de fondo según role
-  const getClassColor = (role: string) => {
-    switch (role) {
-      case "Attacker":
-        return "#ffcccc";
-      case "Defender":
-        return "#ccffcc";
-      case "Supporter":
-        return "#fff2cc";
-      case "All-Rounder":
-        return "#e6ccff";
-      case "Speedster":
-        return "#cce0ff";
-      default:
-        return "#f0f0f0";
-    }
-  };
+  // 🔹 Color de fondo según role (tinte oscuro coherente con el tema)
+  const getClassColor = (role: string) => alpha(roleColor(role), 0.18);
 
   // 🔹 Cargar datos iniciales
   useEffect(() => {
@@ -189,8 +176,19 @@ const UserBagPage = ({ userId }: UserBagPageProps) => {
   return (
     <Box p={3} display="flex" flexDirection="column" height="100%" marginTop={6}>
       <ToastContainer position="top-right" autoClose={3000} hideProgressBar />
-      <Typography variant="h4" gutterBottom textAlign="center">
-        My Pokémons
+      <Typography
+        variant="h4"
+        gutterBottom
+        textAlign="center"
+        sx={{
+          fontWeight: 800,
+          letterSpacing: 1,
+          background: "linear-gradient(90deg,#ff4d54,#ffcb3d)",
+          WebkitBackgroundClip: "text",
+          WebkitTextFillColor: "transparent",
+        }}
+      >
+        MY POKÉMON
       </Typography>
 
       {/* 🔹 Indicador de cuántos seleccionados */}

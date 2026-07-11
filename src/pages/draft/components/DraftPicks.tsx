@@ -9,7 +9,7 @@ export default function DraftPicks({
   enemyPicks: any[];
 }) {
   return (
-    <Paper sx={{ p: 2, borderRadius: 3, boxShadow: 4 }}>
+    <Paper sx={{ p: 0, bgcolor: "transparent", border: "none", boxShadow: "none" }}>
       <Typography variant="h6" gutterBottom fontWeight="bold">Draft Picks</Typography>
       <Table size="small">
         <TableHead>

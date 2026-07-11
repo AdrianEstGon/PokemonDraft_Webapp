@@ -1,4 +1,4 @@
-import { Paper, Typography } from "@mui/material";
+import { Paper, Typography, Box } from "@mui/material";
 
 type Team = "ALLY" | "ENEMY" | null;
 type Phase = "BAN" | "PICK" | "ASK_FIRST_PICK" | "ALLY_BANS" | "ENEMY_BANS";
@@ -9,24 +9,38 @@ interface DraftHeaderProps {
 }
 
 export default function DraftHeader({ currentTeam, phase }: DraftHeaderProps) {
-  // Determinar texto de fase
-  let phaseText = "";
-  if (phase === "BAN" || phase === "ALLY_BANS" || phase === "ENEMY_BANS" || phase === "ASK_FIRST_PICK") {
-    phaseText = "Ban";
-  } else if (phase === "PICK") {
-    phaseText = "Pick";
-  }
+  const phaseText =
+    phase === "PICK" ? "Pick Phase" : "Ban Phase";
 
-  // Determinar equipo
-  let teamText = currentTeam === "ALLY" ? "Allies" : currentTeam === "ENEMY" ? "Enemies" : "";
+  const teamText =
+    currentTeam === "ALLY" ? "Your Team" : currentTeam === "ENEMY" ? "Enemy Team" : "";
 
-  // Color del header según equipo
-  let bgColor = currentTeam === "ALLY" ? "primary.main" : currentTeam === "ENEMY" ? "error.main" : "grey.500";
+  const gradient =
+    currentTeam === "ALLY"
+      ? "linear-gradient(90deg,#1e63d6,#3aa0ff)"
+      : currentTeam === "ENEMY"
+      ? "linear-gradient(90deg,#c1121f,#ee1c25)"
+      : "linear-gradient(90deg,#3a4260,#26304a)";
 
   return (
-    <Paper sx={{ p: 2, borderRadius: 3, textAlign: "center", bgcolor: bgColor, color: "white" }}>
-      <Typography variant="h6" fontWeight="bold">
-        {teamText} {phaseText}
+    <Paper
+      sx={{
+        p: 2,
+        borderRadius: 3,
+        textAlign: "center",
+        background: gradient,
+        color: "white",
+        border: "none",
+        boxShadow: "0 8px 24px rgba(0,0,0,0.35)",
+      }}
+    >
+      <Typography variant="subtitle2" sx={{ opacity: 0.85, letterSpacing: 2, textTransform: "uppercase" }}>
+        {phaseText}
+      </Typography>
+      <Typography variant="h5" fontWeight={800}>
+        <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 1 }}>
+          {teamText}
+        </Box>
       </Typography>
     </Paper>
   );

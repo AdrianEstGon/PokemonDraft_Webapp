@@ -1,5 +1,4 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Settings from "../pages/admin/Settings";
 import PokemonCrud from "../pages/admin/PokemonCrud";
 import Login from "../pages/Login";
 import UserManagement from "../pages/admin/UserManagement"; 
@@ -35,16 +34,6 @@ export default function AppRouter() {
             <PrivateRoute>
               <LayoutWithNav>
                 <StartPage />
-              </LayoutWithNav>
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/settings"
-          element={
-            <PrivateRoute>
-              <LayoutWithNav>
-                <Settings />
               </LayoutWithNav>
             </PrivateRoute>
           }

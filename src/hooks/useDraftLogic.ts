@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { DraftAdvisor, type Counter } from "../pages/draft/DraftAdvisor";
+import { DraftAdvisor } from "../pages/draft/DraftAdvisor";
 import { getPokemons } from "../services/PokemonService";
-import { getCounters } from "../services/CounterService";
+import { getCounterData, type CounterData } from "../services/CounterService";
 import { getUserPokemons } from "../services/BagService";
 
 type Team = "ALLY" | "ENEMY";
@@ -39,7 +39,7 @@ export function useDraftLogic() {
   const [searchText, setSearchText] = useState("");
   const [allPokemons, setAllPokemons] = useState<any[]>([]);
   const [userPokemons, setUserPokemons] = useState<string[]>([]);
-  const [counters, setCounters] = useState<Counter[]>([]);
+  const [counterData, setCounterData] = useState<CounterData | null>(null);
   const [loading, setLoading] = useState(true);
 
   const [, setHistory] = useState<DraftState[]>([]);
@@ -72,13 +72,16 @@ export function useDraftLogic() {
             setUserPokemons(p.map((x) => x.name))
           )
         : Promise.resolve([]),
-      getCounters().then(setCounters),
+      getCounterData().then(setCounterData),
     ])
       .catch(console.error)
       .finally(() => setLoading(false));
   }, [userId]);
 
-  const advisor = useMemo(() => new DraftAdvisor(counters), [counters]);
+  const advisor = useMemo(
+    () => new DraftAdvisor(counterData?.matchups ?? {}),
+    [counterData]
+  );
 
   const pickOrder = useMemo(() => {
     if (!whoStarts) return [];
@@ -322,5 +325,8 @@ export function useDraftLogic() {
     handleSelect,
     reset,
     undo,
+    countersMeta: counterData
+      ? { updatedAt: counterData.updatedAt, source: counterData.source }
+      : null,
   };
 }

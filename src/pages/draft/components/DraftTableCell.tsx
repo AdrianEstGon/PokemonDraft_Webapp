@@ -1,4 +1,6 @@
 import { TableCell, Box } from "@mui/material";
+import { alpha } from "@mui/material/styles";
+import { roleColor } from "../../../theme";
 
 type Pokemon = {
   name: string;
@@ -6,17 +8,6 @@ type Pokemon = {
   role: "Attacker" | "Defender" | "Supporter" | "All-Rounder" | "Speedster" | string;
   tier?: string;
 };
-
-function getClassColor(role?: string) {
-  switch (role) {
-    case "Attacker": return "#ffcccc";
-    case "Defender": return "#ccffcc";
-    case "Supporter": return "#fff2cc";
-    case "All-Rounder": return "#e6ccff";
-    case "Speedster": return "#cce0ff";
-    default: return "#f0f0f0";
-  }
-}
 
 export default function DraftTableCell({
   pokemon,
@@ -29,7 +20,8 @@ export default function DraftTableCell({
   recommendation?: number; // 0-100
   showRecommendation?: boolean;
 }) {
-  const color = pokemon ? getClassColor(pokemon.role) : "transparent";
+  const rc = roleColor(pokemon?.role);
+  const color = pokemon ? alpha(rc, 0.18) : "transparent";
 
   const recColor =
     recommendation === undefined
@@ -43,13 +35,15 @@ export default function DraftTableCell({
   return (
     <TableCell
       sx={{
-        bgcolor: pokemon ? color : "transparent",
+        bgcolor: pokemon ? color : "rgba(255,255,255,0.02)",
         textAlign: "center",
         height: 80,
         width: 80,
         p: 0.5,
         borderRadius: 2,
-        borderRight: isAlly ? "3px solid rgba(0,0,0,0.3)" : "none",
+        border: pokemon ? `1px solid ${alpha(rc, 0.5)}` : "1px solid rgba(255,255,255,0.05)",
+        boxShadow: pokemon ? `inset 3px 0 0 ${rc}` : "none",
+        borderRight: isAlly ? "2px solid rgba(255,255,255,0.12)" : undefined,
         position: "relative",
       }}
     >

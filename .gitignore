@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# accidental self-referential nested clone/gitlink
+/PokemonDraft_Webapp/

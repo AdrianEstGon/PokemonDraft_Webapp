@@ -67,11 +67,13 @@ export default function PokemonSimulatorPage() {
 
     return (
       <Paper
-        elevation={3}
+        elevation={0}
         sx={{
           p: 1.5,
           borderRadius: 3,
-          bgcolor: color,
+          background: color,
+          border: "none",
+          boxShadow: "0 10px 30px rgba(0,0,0,0.35)",
           mb: 3,
           width: "fit-content",
           maxWidth: "95%",
@@ -102,8 +104,8 @@ export default function PokemonSimulatorPage() {
               key={idx}
               sx={{
                 borderRadius: 2,
-                boxShadow: 2,
-                bgcolor: "white",
+                border: "1px solid rgba(255,255,255,0.12)",
+                bgcolor: "#131a2b",
                 textAlign: "center",
                 minWidth: cardWidth,
                 height: isMobile ? 100 : isTablet ? 130 : 150,
@@ -163,20 +165,26 @@ export default function PokemonSimulatorPage() {
       <Typography
         variant={isMobile ? "h6" : "h4"}
         gutterBottom
-        fontWeight="bold"
         textAlign="center"
         mb={3}
         mt={10}
+        sx={{
+          fontWeight: 800,
+          letterSpacing: 1,
+          background: "linear-gradient(90deg,#ff4d54,#ffcb3d)",
+          WebkitBackgroundClip: "text",
+          WebkitTextFillColor: "transparent",
+        }}
       >
-        🎲 Pokemon Unite Team Simulator 🎲
+        TEAM SIMULATOR
       </Typography>
 
       {loading ? (
         <CircularProgress />
       ) : (
         <>
-          {renderTeam(teamAlly, "Allies", "#1976d2")}
-          {renderTeam(teamEnemy, "Enemies", "#d32f2f")}
+          {renderTeam(teamAlly, "Allies", "linear-gradient(90deg,#1e63d6,#3aa0ff)")}
+          {renderTeam(teamEnemy, "Enemies", "linear-gradient(90deg,#c1121f,#ee1c25)")}
 
           <Box
             sx={{
@@ -191,12 +199,13 @@ export default function PokemonSimulatorPage() {
               onClick={randomizeTeams}
               disabled={animating}
               sx={{
-                bgcolor: "white",
-                border: `2px solid #1976d2`,
+                bgcolor: "#1c2438",
+                color: "#3aa0ff",
+                border: `2px solid #3aa0ff`,
                 borderRadius: "50%",
                 p: isMobile ? 1.2 : 2,
                 animation: animating ? "spin 0.5s linear infinite" : "none",
-                "&:hover": { bgcolor: "#f0f0f0" },
+                "&:hover": { bgcolor: "#232c44" },
               }}
             >
               <CasinoIcon fontSize={isMobile ? "medium" : "large"} />

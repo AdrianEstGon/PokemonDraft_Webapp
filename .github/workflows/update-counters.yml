@@ -1,0 +1,44 @@
+name: Update counters
+
+# Scrapes uniteapi.dev once a day and commits public/counters.json if it changed.
+# The scraper never overwrites the file with a partial result, so a failed scrape
+# simply leaves the last good data in place.
+
+on:
+  schedule:
+    - cron: "0 6 * * *" # every day at 06:00 UTC
+  workflow_dispatch: {} # allow manual runs from the Actions tab
+
+permissions:
+  contents: write
+
+jobs:
+  update-counters:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Playwright (+ Chromium)
+        run: |
+          npm install -D playwright
+          npx playwright install --with-deps chromium
+
+      - name: Scrape counters
+        run: npm run scrape:counters
+        continue-on-error: true
+
+      - name: Commit updated counters
+        run: |
+          git config user.name "counters-bot"
+          git config user.email "actions@github.com"
+          if [ -n "$(git status --porcelain public/counters.json)" ]; then
+            git add public/counters.json
+            git commit -m "chore(counters): daily update from uniteapi.dev"
+            git push
+          else
+            echo "No changes to counters.json."
+          fi
