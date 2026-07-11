@@ -17,7 +17,6 @@ import UpdateIcon from "@mui/icons-material/Update";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import UndoIcon from "@mui/icons-material/Undo";
 import DraftHeader from "./components/DraftHeader";
-import DraftBans from "./components/DraftBans";
 import DraftPicks from "./components/DraftPicks";
 import DraftAvailable from "./components/DraftAvailable";
 import { useDraftLogic } from "../../hooks/useDraftLogic";
@@ -27,8 +26,6 @@ export default function DraftPage() {
   const {
     currentTeam,
     phase,
-    allyBans,
-    enemyBans,
     allyPicks,
     enemyPicks,
     sortedAvailable,
@@ -129,22 +126,8 @@ export default function DraftPage() {
         )}
 
         <Grid container spacing={{ xs: 2, sm: 3 }}>
-          {/* Bans */}
-          <Grid item xs={12} sm={6} md={3}>
-            <Paper
-              sx={{
-                p: 2,
-                borderRadius: 3,
-                height: "100%",
-                bgcolor: "#1c2438",
-              }}
-            >
-              <DraftBans allyBans={allyBans} enemyBans={enemyBans} />
-            </Paper>
-          </Grid>
-
           {/* Picks */}
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid item xs={12} md={4}>
             <Paper
               sx={{
                 p: 2,
@@ -158,7 +141,7 @@ export default function DraftPage() {
           </Grid>
 
           {/* Available */}
-          <Grid item xs={12} sm={12} md={6}>
+          <Grid item xs={12} md={8}>
             <Paper
               sx={{
                 p: 2,

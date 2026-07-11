@@ -1,7 +1,7 @@
 import { Paper, Typography, Box } from "@mui/material";
 
 type Team = "ALLY" | "ENEMY" | null;
-type Phase = "BAN" | "PICK" | "ASK_FIRST_PICK" | "ALLY_BANS" | "ENEMY_BANS";
+type Phase = "PICK" | "ASK_FIRST_PICK";
 
 interface DraftHeaderProps {
   currentTeam: Team;
@@ -9,11 +9,14 @@ interface DraftHeaderProps {
 }
 
 export default function DraftHeader({ currentTeam, phase }: DraftHeaderProps) {
-  const phaseText =
-    phase === "PICK" ? "Pick Phase" : "Ban Phase";
+  const phaseText = phase === "PICK" ? "Pick Phase" : "Draft Setup";
 
   const teamText =
-    currentTeam === "ALLY" ? "Your Team" : currentTeam === "ENEMY" ? "Enemy Team" : "";
+    currentTeam === "ALLY"
+      ? "Your Team"
+      : currentTeam === "ENEMY"
+      ? "Enemy Team"
+      : "Choose first pick";
 
   const gradient =
     currentTeam === "ALLY"

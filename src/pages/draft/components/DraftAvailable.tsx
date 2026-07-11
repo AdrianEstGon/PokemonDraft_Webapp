@@ -1,10 +1,12 @@
 import { Box, Button, Typography, FormControl, InputLabel, Select, MenuItem, Autocomplete, TextField, Checkbox, FormControlLabel } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import type { Dispatch, SetStateAction } from "react";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
+import { roleColor } from "../../../theme";
 
 type ClassFilter = "ALL" | "Attacker" | "Defender" | "Supporter" | "All-Rounder" | "Speedster";
-type Phase = "ALLY_BANS" | "ENEMY_BANS" | "ASK_FIRST_PICK" | "PICK";
+type Phase = "ASK_FIRST_PICK" | "PICK";
 
 interface DraftAvailableProps {
   available: any[];
@@ -141,14 +143,16 @@ export default function DraftAvailable({
               p: 1,
               borderRadius: 3,
               position: "relative",
-              bgcolor: "rgba(255,255,255,0.03)",
-              borderColor: "rgba(255,255,255,0.10)",
+              // 🎨 Fondo según el rol para diferenciar de un vistazo
+              bgcolor: alpha(roleColor(p.role), 0.22),
+              borderColor: alpha(roleColor(p.role), 0.55),
+              boxShadow: `inset 0 -3px 0 ${alpha(roleColor(p.role), 0.75)}`,
               transition: "transform .12s ease, box-shadow .12s ease",
               "&:hover": {
                 transform: "translateY(-2px)",
-                borderColor: "secondary.main",
-                boxShadow: "0 8px 20px rgba(0,0,0,0.4)",
-                bgcolor: "rgba(58,160,255,0.08)",
+                borderColor: roleColor(p.role),
+                boxShadow: `inset 0 -3px 0 ${roleColor(p.role)}, 0 8px 20px rgba(0,0,0,0.45)`,
+                bgcolor: alpha(roleColor(p.role), 0.32),
               },
             }}
           >

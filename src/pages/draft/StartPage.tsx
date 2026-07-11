@@ -48,7 +48,7 @@ export default function StartPage() {
           READY TO DRAFT?
         </Typography>
         <Typography variant="body1" color="text.secondary" sx={{ mt: 0.5 }}>
-          Tap the Poké Ball to start banning &amp; picking
+          Tap the Poké Ball to start picking
         </Typography>
       </Box>
 
